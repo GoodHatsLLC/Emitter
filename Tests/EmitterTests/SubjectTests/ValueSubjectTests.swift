@@ -1,0 +1,67 @@
+import Disposable
+import Emitter
+import XCTest
+
+// MARK: - ValueSubjectTests
+
+@MainActor
+final class ValueSubjectTests: XCTestCase {
+
+    var stage: DisposalStage!
+
+    override func setUp() async throws {
+        stage = .init()
+    }
+
+    override func tearDown() async throws {
+        stage.dispose()
+        stage = nil
+    }
+
+    func test_emission() throws {
+        var record: [String] = []
+
+        let source: ValueSubject<String> = .init("initial")
+
+        source
+            .subscribe { value in
+                record.append(value)
+            }
+            .stage(on: stage)
+
+        source.emit(.value("a"))
+        source.emit(.value("b"))
+        source.emit(.value("c"))
+
+        XCTAssertEqual(["initial", "a", "b", "c"], record)
+    }
+
+    func test_flatMapIssue() throws {
+        var record: [String] = []
+
+        let sourceA: PublishSubject<Int> = .init()
+        let sourceB: ValueSubject<String> = .init("initial")
+
+        sourceA
+            .flatMapLatest { value in
+                sourceB.map { str in
+                    "\(str):\(value)"
+                }
+            }
+            .subscribe { value in
+                record.append(value)
+            }
+            .stage(on: stage)
+
+        sourceA.emit(.value(1))
+        sourceA.emit(.value(2))
+        sourceB.emit(.value("a"))
+        sourceB.emit(.value("b"))
+        sourceA.emit(.value(3))
+        sourceA.emit(.value(0))
+        sourceB.emit(.value("c"))
+
+        XCTAssertEqual(["initial:1", "initial:2", "a:2", "b:2", "b:3", "b:0", "c:0"], record)
+    }
+
+}
