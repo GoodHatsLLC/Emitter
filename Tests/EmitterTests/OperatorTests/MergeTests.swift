@@ -44,8 +44,8 @@ final class MergeTests: XCTestCase {
 
     func test_dispose_releasesResources() throws {
         var record: [String] = []
-        weak var weakSourceA: PublishSubject<Int>? = nil
-        weak var weakSourceB: PublishSubject<String>? = nil
+        weak var weakSourceA: PublishSubject<Int>?
+        weak var weakSourceB: PublishSubject<String>?
 
         autoreleasepool {
             autoreleasepool {

@@ -7,6 +7,7 @@ import Foundation
 @MainActor
 public final class ValueSubject<Value: Sendable>: Emitter, Source {
 
+    @inlinable
     public init(_ value: Value) {
         storage = .init(
             isActive: true,
@@ -18,6 +19,7 @@ public final class ValueSubject<Value: Sendable>: Emitter, Source {
 
     public var id: UUID = .init()
 
+    @inlinable
     public var value: Value {
         get { storage.value }
         set {
@@ -26,19 +28,32 @@ public final class ValueSubject<Value: Sendable>: Emitter, Source {
         }
     }
 
+    @usableFromInline
     @MainActor
     struct Storage {
+        @inlinable
+        init(isActive: Bool, value: Value, subscriptions: Set<Subscription<Value>> = []) {
+            self.isActive = isActive
+            self.value = value
+            self.subscriptions = subscriptions
+        }
+
+        @usableFromInline
         var isActive: Bool
+        @usableFromInline
         var value: Value
+        @usableFromInline
         var subscriptions: Set<Subscription<Value>> = []
     }
 
-    private var storage: Storage
+    @usableFromInline
+    var storage: Storage
 }
 
 // MARK: - Source API
 extension ValueSubject {
 
+    @inlinable
     public func emit(_ emission: Emission<Value>) {
         switch emission {
         case .finished,
@@ -54,7 +69,8 @@ extension ValueSubject {
         }
     }
 
-    private func emit(value: Value) {
+    @inlinable
+    func emit(value: Value) {
         for subscription in storage.subscriptions {
             subscription
                 .receive(emission: .value(value))
@@ -65,12 +81,12 @@ extension ValueSubject {
 
 // MARK: - Emitter API
 extension ValueSubject {
+    @inlinable
     public func subscribe<S: Subscriber>(
         _ subscriber: S
     )
         -> AnyDisposable
-        where S.Value == Value
-    {
+        where S.Value == Value {
         let subscription = Subscription<Value>(
             source: self,
             subscriber: subscriber

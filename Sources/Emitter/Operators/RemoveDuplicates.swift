@@ -3,8 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func removeDuplicates() -> some Emitter<Output>
-        where Output: Equatable
-    {
+        where Output: Equatable {
         RemoveDuplicates(upstream: self)
     }
 }
@@ -22,15 +21,14 @@ struct RemoveDuplicates<Output: Sendable>: Emitter where Output: Equatable {
 
     @MainActor
     final class Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output, Output: Equatable
-    {
+        where Downstream.Value == Output, Output: Equatable {
 
         init(downstream: Downstream) {
             self.downstream = downstream
         }
 
         let downstream: Downstream
-        var last: Output? = nil
+        var last: Output?
 
         func receive(emission: Emission<Output>) {
             switch emission {
@@ -48,8 +46,7 @@ struct RemoveDuplicates<Output: Sendable>: Emitter where Output: Equatable {
     @usableFromInline
     func subscribe<S: Subscriber>(_ subscriber: S)
         -> AnyDisposable
-        where S.Value == Output, Output: Equatable
-    {
+        where S.Value == Output, Output: Equatable {
         upstream.subscribe(Sub<S>(downstream: subscriber))
     }
 

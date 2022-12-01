@@ -43,7 +43,7 @@ final class CombineLatestTests: XCTestCase {
             Tuple.create(2, "a"),
             Tuple.create(3, "a"),
             Tuple.create(3, "b"),
-            Tuple.create(3, "c"),
+            Tuple.create(3, "c")
         ]
 
         XCTAssertEqual(
@@ -54,8 +54,8 @@ final class CombineLatestTests: XCTestCase {
 
     func test_dispose_releasesResources() throws {
         var record: [Tuple.Size2<Int, String>] = []
-        weak var weakSourceA: PublishSubject<Int>? = nil
-        weak var weakSourceB: ValueSubject<String>? = nil
+        weak var weakSourceA: PublishSubject<Int>?
+        weak var weakSourceB: ValueSubject<String>?
 
         autoreleasepool {
             autoreleasepool {

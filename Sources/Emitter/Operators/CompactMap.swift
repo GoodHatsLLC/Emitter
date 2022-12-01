@@ -3,8 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func compactMap<NewOutput: Sendable>(transformer: @escaping @MainActor (Output) -> NewOutput?)
-        -> some Emitter<NewOutput>
-    {
+        -> some Emitter<NewOutput> {
         CompactMap(upstream: self, transformer: transformer)
     }
 }
@@ -24,8 +23,12 @@ struct CompactMap<Input: Sendable, Output: Sendable>: Emitter {
 
     @MainActor
     struct Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output
-    {
+        where Downstream.Value == Output {
+        init(downstream: Downstream, transformer: @escaping @MainActor (Input) -> Output?) {
+            self.downstream = downstream
+            self.transformer = transformer
+        }
+
         let downstream: Downstream
         let transformer: @MainActor (Input)
             -> Output?
@@ -48,14 +51,13 @@ struct CompactMap<Input: Sendable, Output: Sendable>: Emitter {
         }
     }
 
+    let transformer: @MainActor (Input) -> Output?
+    let upstream: any Emitter<Input>
+
     func subscribe<S: Subscriber>(_ subscriber: S)
         -> AnyDisposable
-        where S.Value == Output
-    {
+        where S.Value == Output {
         upstream.subscribe(Sub<S>(downstream: subscriber, transformer: transformer))
     }
-
-    private let transformer: @MainActor (Input) -> Output?
-    private let upstream: any Emitter<Input>
 
 }

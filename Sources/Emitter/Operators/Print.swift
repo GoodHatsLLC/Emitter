@@ -60,8 +60,7 @@ struct Print<Output: Sendable>: Emitter {
 
     @MainActor
     struct Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output
-    {
+        where Downstream.Value == Output {
         let downstream: Downstream
         let identifier: String
         let id: UUID
@@ -107,8 +106,7 @@ struct Print<Output: Sendable>: Emitter {
 
     func subscribe<S: Subscriber>(_ subscriber: S)
         -> AnyDisposable
-        where S.Value == Output
-    {
+        where S.Value == Output {
         if types.contains(.subscribe) {
             Swift.print(
                 """

@@ -47,10 +47,39 @@ final class FlatMapLatestTests: XCTestCase {
         XCTAssertEqual(["11", "22", "33"], record)
     }
 
+    func testStream_flatMapLatest_value() throws {
+        var record: [String] = []
+        let sourceA: ValueSubject<Int> = .init(0)
+        let sourceZ: ValueSubject<()> = .init(())
+        func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
+            sourceZ
+                .map { _ in String(repeating: "\(input)", count: 2) }
+        }
+
+        sourceA
+            .flatMapLatest { aValue in
+                sourceBFunc(input: aValue, count: 2)
+            }
+            .subscribe { output in
+                record.append(output)
+            }
+            .stage(on: stage)
+
+        XCTAssertEqual(record.count, 1)
+
+        let entriesA: [Int] = [1, 2, 3]
+        for entry in entriesA {
+            sourceA.emit(.value(entry))
+            sourceZ.emit(.value(()))
+        }
+
+        XCTAssertEqual(["00", "11", "11", "22", "22", "33", "33"], record)
+    }
+
     func test_dispose_releasesResources_outerPublishSubject() throws {
         var record: [String] = []
-        weak var weakSourceA: PublishSubject<Int>? = nil
-        weak var weakSourceB: ValueSubject<String>? = nil
+        weak var weakSourceA: PublishSubject<Int>?
+        weak var weakSourceB: ValueSubject<String>?
 
         autoreleasepool {
             autoreleasepool {
@@ -91,8 +120,8 @@ final class FlatMapLatestTests: XCTestCase {
 
     func test_dispose_releasesResources_outerValueSubject() throws {
         var record: [String] = []
-        weak var weakSourceA: ValueSubject<Int>? = nil
-        weak var weakSourceB: PublishSubject<String>? = nil
+        weak var weakSourceA: ValueSubject<Int>?
+        weak var weakSourceB: PublishSubject<String>?
 
         autoreleasepool {
             autoreleasepool {
@@ -130,5 +159,74 @@ final class FlatMapLatestTests: XCTestCase {
 
         XCTAssertEqual(["a:2", "b:2", "c:0"], record)
     }
-
 }
+
+#if canImport(Combine)
+import Combine
+
+// MARK: Combine comparisons
+extension FlatMapLatestTests {
+
+    func disabled_testStream_flatMapLatest_combine() throws {
+        var cancellables = Set<AnyCancellable>()
+        var record: [String] = []
+        let sourceA: PassthroughSubject<Int, Never> = .init()
+        let sourceZ: PassthroughSubject<(), Never> = .init()
+        func sourceBFunc(input: Int, count _: Int) -> some Publisher<String, Never> {
+            sourceZ
+                .map { _ in String(repeating: "\(input)", count: 2) }
+        }
+
+        sourceA
+            .map { aValue in
+                sourceBFunc(input: aValue, count: 2)
+            }
+            .switchToLatest()
+            .sink { output in
+                record.append(output)
+            }
+            .store(in: &cancellables)
+
+        XCTAssertEqual(record.count, 0)
+
+        let entriesA: [Int] = [1, 2, 3]
+        for entry in entriesA {
+            sourceA.send(entry)
+            sourceZ.send(())
+        }
+
+        XCTAssertEqual(["11", "22", "33"], record)
+    }
+
+    func disabled_testStream_flatMapLatest_value_combine() throws {
+        var cancellables = Set<AnyCancellable>()
+        var record: [String] = []
+        let sourceA: CurrentValueSubject<Int, Never> = .init(0)
+        let sourceZ: CurrentValueSubject<(), Never> = .init(())
+        func sourceBFunc(input: Int, count _: Int) -> some Publisher<String, Never> {
+            sourceZ
+                .map { _ in String(repeating: "\(input)", count: 2) }
+        }
+
+        sourceA
+            .map { aValue in
+                sourceBFunc(input: aValue, count: 2)
+            }
+            .switchToLatest()
+            .sink { output in
+                record.append(output)
+            }
+            .store(in: &cancellables)
+
+        XCTAssertEqual(record.count, 1)
+
+        let entriesA: [Int] = [1, 2, 3]
+        for entry in entriesA {
+            sourceA.send(entry)
+            sourceZ.send(())
+        }
+
+        XCTAssertEqual(["00", "11", "11", "22", "22", "33", "33"], record)
+    }
+}
+#endif

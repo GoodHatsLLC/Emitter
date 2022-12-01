@@ -42,7 +42,7 @@ final class FilterTests: XCTestCase {
 
     func test_dispose_releasesResources() throws {
         var record: [Int] = []
-        weak var weakSourceA: PublishSubject<Int>? = nil
+        weak var weakSourceA: PublishSubject<Int>?
 
         autoreleasepool {
             autoreleasepool {

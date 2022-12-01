@@ -24,7 +24,7 @@ final class FinishTests: XCTestCase {
     func testStream_valueDoesNotFinish() throws {
         var record: [String] = []
         var didComplete = false
-        var failure: Error? = nil
+        var failure: Error?
         source
             .subscribe(
                 value: { value in
@@ -53,7 +53,7 @@ final class FinishTests: XCTestCase {
     func testStream_failureFinishes() throws {
         var record: [String] = []
         var didComplete = false
-        var failure: Error? = nil
+        var failure: Error?
         source
             .subscribe(
                 value: { value in

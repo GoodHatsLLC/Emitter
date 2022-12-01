@@ -22,8 +22,7 @@ struct Filter<Output: Sendable>: Emitter {
     }
 
     struct Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output
-    {
+        where Downstream.Value == Output {
         let downstream: Downstream
         let evaluator: @MainActor (Output)
             -> Bool
@@ -48,8 +47,7 @@ struct Filter<Output: Sendable>: Emitter {
 
     func subscribe<S: Subscriber>(_ subscriber: S)
         -> AnyDisposable
-        where S.Value == Output
-    {
+        where S.Value == Output {
         upstream.subscribe(Sub<S>(downstream: subscriber, evaluator: evaluator))
     }
 

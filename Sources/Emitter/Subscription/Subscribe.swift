@@ -8,8 +8,7 @@ extension Emitter {
         finished: @escaping @MainActor () -> Void = {},
         failed: @escaping @MainActor (_ error: Error) -> Void = { _ in }
     )
-        -> AnyDisposable
-    {
+        -> AnyDisposable {
         subscribe(
             Subscribe(
                 value: value,

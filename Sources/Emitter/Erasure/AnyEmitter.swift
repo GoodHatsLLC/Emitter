@@ -15,8 +15,7 @@ public struct AnyEmitter<Output: Sendable>: Emitter {
         _ subscriber: S
     )
         -> AnyDisposable
-        where S.Value == Output
-    {
+        where S.Value == Output {
         subscribeFunc(subscriber)
     }
 }

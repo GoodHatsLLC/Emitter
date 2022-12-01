@@ -33,14 +33,20 @@ struct CombineLatest<OutputA: Sendable, OutputB: Sendable>: Emitter {
 
     @MainActor
     struct Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output
-    {
+        where Downstream.Value == Output {
+        init(downstream: Downstream) {
+            self.downstream = downstream
+        }
+
         enum Input {
             case a(OutputA)
             case b(OutputB)
         }
 
         let downstream: Downstream
+
+        let lastA = Ref<OutputA?>(nil)
+        let lastB = Ref<OutputB?>(nil)
 
         func receive(emission: Emission<Input>) {
             switch emission {
@@ -64,15 +70,14 @@ struct CombineLatest<OutputA: Sendable, OutputB: Sendable>: Emitter {
             }
         }
 
-        private let lastA = Ref<OutputA?>(nil)
-        private let lastB = Ref<OutputB?>(nil)
-
     }
+
+    let upstreamA: any Emitter<OutputA>
+    let upstreamB: any Emitter<OutputB>
 
     func subscribe<S: Subscriber>(_ subscriber: S)
         -> AnyDisposable
-        where S.Value == Output
-    {
+        where S.Value == Output {
         let stage = DisposalStage()
         let sub = Sub(downstream: subscriber)
         let mapA = Map.Sub(downstream: sub) { value in
@@ -90,8 +95,5 @@ struct CombineLatest<OutputA: Sendable, OutputB: Sendable>: Emitter {
         return stage
             .erase()
     }
-
-    private let upstreamA: any Emitter<OutputA>
-    private let upstreamB: any Emitter<OutputB>
 
 }

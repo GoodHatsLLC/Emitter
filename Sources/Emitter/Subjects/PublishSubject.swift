@@ -7,18 +7,22 @@ import Foundation
 @MainActor
 public final class PublishSubject<Value: Sendable>: Emitter, Source {
 
+    @inlinable
     public init() {}
 
     public typealias Output = Value
 
     public var id: UUID = .init()
 
-    private var subscriptions: Set<Subscription<Value>> = []
-    private var isActive = true
+    @usableFromInline
+    var subscriptions: Set<Subscription<Value>> = []
+    @usableFromInline
+    var isActive = true
 }
 
 // MARK: - Source API
 extension PublishSubject {
+    @inlinable
     public func emit(_ emission: Emission<Value>) {
         switch emission {
         case .finished,
@@ -38,12 +42,12 @@ extension PublishSubject {
 
 // MARK: - Emitter API
 extension PublishSubject {
+    @inlinable
     public func subscribe<S: Subscriber>(
         _ subscriber: S
     )
         -> AnyDisposable
-        where S.Value == Value
-    {
+        where S.Value == Value {
         let subscription = Subscription<Value>(
             source: self,
             subscriber: subscriber

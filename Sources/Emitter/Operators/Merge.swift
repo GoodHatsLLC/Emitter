@@ -3,8 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func merge<Other: Emitter>(_ other: Other) -> some Emitter<Output>
-        where Other.Output == Output
-    {
+        where Other.Output == Output {
         Merge(upstreamA: self, upstreamB: other)
     }
 }
@@ -24,8 +23,7 @@ struct Merge<Output: Sendable>: Emitter {
 
     @MainActor
     struct IntermediateSub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output
-    {
+        where Downstream.Value == Output {
         let downstream: Downstream
         weak var disposable: AnyDisposable?
 
@@ -33,8 +31,7 @@ struct Merge<Output: Sendable>: Emitter {
             upstreamA: any Emitter<Output>,
             upstreamB: any Emitter<Output>
         )
-            -> AnyDisposable
-        {
+            -> AnyDisposable {
             let disposableA = upstreamA.subscribe(self)
             let disposableB = upstreamB.subscribe(self)
             let disposable = AnyDisposable {
@@ -63,8 +60,7 @@ struct Merge<Output: Sendable>: Emitter {
 
     func subscribe<S: Subscriber>(_ subscriber: S)
         -> AnyDisposable
-        where S.Value == Output
-    {
+        where S.Value == Output {
         var sub = IntermediateSub<S>(downstream: subscriber)
         return sub.subscribe(
             upstreamA: upstreamA,
