@@ -43,7 +43,7 @@ final class CombineLatestTests: XCTestCase {
             Tuple.create(2, "a"),
             Tuple.create(3, "a"),
             Tuple.create(3, "b"),
-            Tuple.create(3, "c")
+            Tuple.create(3, "c"),
         ]
 
         XCTAssertEqual(

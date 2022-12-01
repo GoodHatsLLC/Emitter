@@ -1,14 +1,28 @@
 import Disposable
 import EmitterInterface
-import Foundation
 
 extension Emitter {
+    public func subscribeValue(
+        value: @escaping @MainActor (_ value: Output) -> Void
+    )
+        -> AnyDisposable
+    {
+        subscribe(
+            Subscribe(
+                value: value,
+                finished: nil,
+                failed: nil
+            )
+        )
+    }
+
     public func subscribe(
         value: @escaping @MainActor (_ value: Output) -> Void,
         finished: @escaping @MainActor () -> Void = {},
         failed: @escaping @MainActor (_ error: Error) -> Void = { _ in }
     )
-        -> AnyDisposable {
+        -> AnyDisposable
+    {
         subscribe(
             Subscribe(
                 value: value,
@@ -21,40 +35,32 @@ extension Emitter {
 
 // MARK: - Subscribe
 
-final class Subscribe<Value>: Subscriber {
+private struct Subscribe<Value>: Subscriber {
 
-    init(
-        value: @MainActor @escaping (_ value: Value) -> Void,
-        finished: @MainActor @escaping () -> Void,
-        failed: @MainActor @escaping (_ error: Error) -> Void
+    fileprivate init(
+        value: @MainActor @escaping (Value) -> Void,
+        finished: (@MainActor () -> Void)?,
+        failed: (@MainActor (Error) -> Void)?
     ) {
-        handlers = .init(
-            value: value,
-            finished: finished,
-            failed: failed
-        )
+        valueFunc = value
+        finishedFunc = finished
+        failedFunc = failed
     }
-
-    struct EventHandlers {
-        let value: @MainActor (_ value: Value) -> Void
-        let finished: @MainActor () -> Void
-        let failed: @MainActor (_ error: Error) -> Void
-    }
-
-    let id = UUID()
 
     @MainActor
-    func receive(emission: Emission<Value>) {
+    fileprivate func receive(emission: Emission<Value>) {
         switch emission {
         case .value(let value):
-            handlers.value(value)
+            valueFunc(value)
         case .failed(let error):
-            handlers.failed(error)
+            failedFunc?(error)
         case .finished:
-            handlers.finished()
+            finishedFunc?()
         }
     }
 
-    private let handlers: EventHandlers
+    private let valueFunc: @MainActor (Value) -> Void
+    private let finishedFunc: (@MainActor () -> Void)?
+    private let failedFunc: (@MainActor (Error) -> Void)?
 
 }

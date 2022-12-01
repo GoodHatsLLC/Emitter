@@ -7,20 +7,20 @@ let package = Package(
     name: "Benchmarks",
     platforms: [.macOS(.v10_15), .iOS(.v14)],
     products: [
-        .executable(name: "emitter-benchmark", targets: ["Benchmarks"])
+        .executable(name: "emitter-benchmark", targets: ["Benchmarks"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-collections-benchmark.git", from: "0.0.3"),
-        .package(name: "Emitter", path: "../")
+        .package(name: "Emitter", path: "../"),
     ],
     targets: [
         .executableTarget(
             name: "Benchmarks",
             dependencies: [
                 "Emitter",
-                .product(name: "CollectionsBenchmark", package: "swift-collections-benchmark")
+                .product(name: "CollectionsBenchmark", package: "swift-collections-benchmark"),
             ]
-        )
+        ),
     ]
 )

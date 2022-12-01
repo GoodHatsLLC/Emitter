@@ -10,7 +10,7 @@ It's intended as a learning resource. Its smaller footprint and simplicity might
 * Like `RxSwift` but `unlike` Combine it has no support for back pressure management or typed errors.
 * It is fully `@MainThread` bound.
 * It has a limited number of [implemented operators](https://github.com/GoodHatsLLC/Emitter/tree/main/Sources/Emitter/Operators).
-* The various operators' speeds are [between 90% and 50% of Combine's](https://github.com/GoodHatsLLC/Emitter/blob/main/Tests/EmitterTests/Benchmarks/Benchmarks.swift).
+* The operators' speeds are [not quite competitive with Combine's](https://github.com/GoodHatsLLC/Emitter/blob/main/Tests/EmitterTests/Benchmarks/Benchmarks.swift).
 
 ## Operator performance
 

@@ -15,7 +15,7 @@ final class Benchmarks: XCTestCase {
 
 extension Benchmarks {
     func test_map() {
-        measure { // Time: 0.034 sec
+        measure { // Time: 0.018 sec
             let sourceA: PublishSubject<Int> = .init()
             let stage = DisposalStage()
             sourceA
@@ -56,7 +56,7 @@ extension Benchmarks {
 extension Benchmarks {
 
     func test_compactMap() {
-        measure { // Time: 0.035 sec
+        measure { // Time: 0.018 sec
             let sourceA: PublishSubject<Int> = .init()
             let stage = DisposalStage()
             var shouldNil = false
@@ -78,7 +78,7 @@ extension Benchmarks {
 
     #if canImport(Combine)
     func test_compactMap_combine() {
-        measure { // Time: 0.022 sec
+        measure { // Time: 0.016 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             var stage = Set<AnyCancellable>()
             var shouldNil = false
@@ -105,7 +105,7 @@ extension Benchmarks {
 extension Benchmarks {
 
     func test_flatMapLatest() {
-        measure { // Time: 0.150 sec
+        measure { // Time: 0.095 sec
             let stage = DisposalStage()
             let sourceA: PublishSubject<Int> = .init()
             let sourceB: ValueSubject<Int> = .init(1)
@@ -127,7 +127,7 @@ extension Benchmarks {
 
     #if canImport(Combine)
     func test_flatMapLatest_combine() {
-        measure { // Time: 0.095 sec
+        measure { // Time: 0.104 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             let sourceB: CurrentValueSubject<Int, Never> = .init(1)
             var stage = Set<AnyCancellable>()
@@ -154,7 +154,7 @@ extension Benchmarks {
 extension Benchmarks {
 
     func test_combineLatest() {
-        measure { // Time: 0.076 sec
+        measure { // Time: 0.045 sec
             let stage = DisposalStage()
             let sourceA: PublishSubject<Int> = .init()
             let sourceB: ValueSubject<Int> = .init(1)
@@ -197,7 +197,7 @@ extension Benchmarks {
 
 extension Benchmarks {
     func test_merge() {
-        measure { // Time: 0.029 sec
+        measure { // Time: 0.015 sec
             let stage = DisposalStage()
             let sourceA: PublishSubject<Int> = .init()
             let sourceB: ValueSubject<Int> = .init(1)
@@ -217,7 +217,7 @@ extension Benchmarks {
 
     #if canImport(Combine)
     func test_merge_combine() {
-        measure { // Time: 0.019 sec
+        measure { // Time: 0.015 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             let sourceB: CurrentValueSubject<Int, Never> = .init(1)
             var stage = Set<AnyCancellable>()
@@ -240,7 +240,7 @@ extension Benchmarks {
 
 extension Benchmarks {
     func test_removeDuplicates() {
-        measure { // Time: 0.038 sec
+        measure { // Time: 0.023 sec
             let stage = DisposalStage()
             let sourceA: PublishSubject<Int> = .init()
 
@@ -261,7 +261,7 @@ extension Benchmarks {
 
     #if canImport(Combine)
     func test_removeDuplicates_combine() {
-        measure { // Time: 0.032 sec
+        measure { // Time: 0.030 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             var stage = Set<AnyCancellable>()
             sourceA

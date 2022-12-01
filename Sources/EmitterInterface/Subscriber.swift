@@ -1,5 +1,3 @@
-import Foundation
-
 @MainActor
 public protocol Subscriber<Value> {
     associatedtype Value: Sendable

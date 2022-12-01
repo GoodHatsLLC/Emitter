@@ -1,6 +1,5 @@
 import Disposable
 import EmitterInterface
-import Foundation
 
 extension Emitter {
     public var values: AsyncThrowingStream<Output, Error> {

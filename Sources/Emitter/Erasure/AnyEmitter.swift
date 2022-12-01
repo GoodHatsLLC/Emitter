@@ -5,7 +5,7 @@ import EmitterInterface
 
 public struct AnyEmitter<Output: Sendable>: Emitter {
 
-    init<E: Emitter>(_ emitter: E) where E.Output == Output {
+    fileprivate init(_ emitter: some Emitter<Output>) {
         subscribeFunc = { emitter.subscribe($0) }
     }
 
@@ -14,12 +14,20 @@ public struct AnyEmitter<Output: Sendable>: Emitter {
     public func subscribe<S: Subscriber>(
         _ subscriber: S
     )
-        -> AnyDisposable
-        where S.Value == Output {
+        -> AnyDisposable where S.Value == Output
+    {
         subscribeFunc(subscriber)
     }
 }
 
 extension AnyEmitter {
     public func erase() -> AnyEmitter<Output> { self }
+}
+
+extension Emitter {
+    public func erase() -> AnyEmitter<Output> {
+        AnyEmitter(self)
+    }
+
+    public func any() -> any Emitter<Output> { self }
 }

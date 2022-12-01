@@ -11,34 +11,34 @@ let package = Package(
             name: "Emitter",
             targets: [
                 "Emitter",
-                "EmitterInterface"
+                "EmitterInterface",
             ]
         ),
         .library(
             name: "EmitterInterface",
             targets: ["EmitterInterface"]
-        )
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: "0.1.0")
+        .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: "0.1.0"),
     ],
     targets: [
         .target(
             name: "Emitter",
             dependencies: [
                 "Disposable",
-                "EmitterInterface"
+                "EmitterInterface",
             ]
         ),
         .target(
             name: "EmitterInterface",
             dependencies: [
-                .product(name: "DisposableInterface", package: "Disposable")
+                .product(name: "DisposableInterface", package: "Disposable"),
             ]
         ),
         .testTarget(
             name: "EmitterTests",
             dependencies: ["Emitter"]
-        )
+        ),
     ]
 )

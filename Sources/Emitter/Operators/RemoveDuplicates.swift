@@ -3,53 +3,62 @@ import EmitterInterface
 
 extension Emitter {
     public func removeDuplicates() -> some Emitter<Output>
-        where Output: Equatable {
-        RemoveDuplicates(upstream: self)
+        where Output: Equatable
+    {
+        Emitters.RemoveDuplicates(upstream: self)
     }
 }
 
-// MARK: - RemoveDuplicates
+// MARK: - Emitters.RemoveDuplicates
 
-@MainActor
-struct RemoveDuplicates<Output: Sendable>: Emitter where Output: Equatable {
-
-    init<Upstream: Emitter>(
-        upstream: Upstream
-    ) where Upstream.Output == Output {
-        self.upstream = upstream
-    }
+extension Emitters {
+    // MARK: - RemoveDuplicates
 
     @MainActor
-    final class Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output, Output: Equatable {
+    public struct RemoveDuplicates<Upstream: Emitter, Output: Sendable>: Emitter where Output: Equatable,
+        Upstream.Output == Output
+    {
 
-        init(downstream: Downstream) {
-            self.downstream = downstream
+        public init(
+            upstream: Upstream
+        ) {
+            self.upstream = upstream
         }
 
-        let downstream: Downstream
-        var last: Output?
+        public func subscribe<S: Subscriber>(_ subscriber: S)
+            -> AnyDisposable
+            where S.Value == Output, Output: Equatable
+        {
+            upstream.subscribe(Sub<S>(downstream: subscriber))
+        }
 
-        func receive(emission: Emission<Output>) {
-            switch emission {
-            case .value(let value):
-                if value != last {
-                    last = value
+        @MainActor
+        private final class Sub<Downstream: Subscriber>: Subscriber
+            where Downstream.Value == Output, Output: Equatable
+        {
+
+            public init(downstream: Downstream) {
+                self.downstream = downstream
+            }
+
+            public func receive(emission: Emission<Output>) {
+                switch emission {
+                case .value(let value):
+                    if value != last {
+                        last = value
+                        downstream.receive(emission: emission)
+                    }
+                case _:
                     downstream.receive(emission: emission)
                 }
-            case _:
-                downstream.receive(emission: emission)
             }
+
+            private let downstream: Downstream
+            private var last: Output?
+
         }
+
+        private let upstream: Upstream
+
     }
-
-    @usableFromInline
-    func subscribe<S: Subscriber>(_ subscriber: S)
-        -> AnyDisposable
-        where S.Value == Output, Output: Equatable {
-        upstream.subscribe(Sub<S>(downstream: subscriber))
-    }
-
-    private let upstream: any Emitter<Output>
-
 }

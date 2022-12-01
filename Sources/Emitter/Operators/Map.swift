@@ -2,60 +2,74 @@ import Disposable
 import EmitterInterface
 
 extension Emitter {
-
-    public func map<NewOutput: Sendable>(_ transformer: @escaping @MainActor (Output) -> NewOutput)
-        -> some Emitter<NewOutput> {
-        Map(upstream: self, transformer: transformer)
+    public func map<NewOutput: Sendable>(
+        _ transformer: @escaping @MainActor (Output) -> NewOutput
+    ) -> some Emitter<NewOutput> {
+        Emitters.Map(upstream: self, transformer: transformer)
     }
 }
 
-// MARK: - Map
+// MARK: - Emitters.Map
 
-@MainActor
-struct Map<Input: Sendable, Output: Sendable>: Emitter {
-
-    init<Upstream: Emitter>(
-        upstream: Upstream,
-        transformer: @escaping @MainActor (Input) -> Output
-    ) where Upstream.Output == Input {
-        self.transformer = transformer
-        self.upstream = upstream
-    }
+extension Emitters {
+    // MARK: - Map
 
     @MainActor
-    struct Sub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output {
+    public struct Map<Upstream: Emitter, Output: Sendable>: Emitter {
 
-        init(downstream: Downstream, transformer: @escaping @MainActor (Input) -> Output) {
-            self.downstream = downstream
+        public init(
+            upstream: Upstream,
+            transformer: @escaping @MainActor (Upstream.Output) -> Output
+        ) {
             self.transformer = transformer
+            self.upstream = upstream
         }
 
-        let downstream: Downstream
-        let transformer: @MainActor (Input)
-            -> Output
+        public let transformer: @MainActor (Upstream.Output) -> Output
+        public let upstream: Upstream
 
-        func receive(emission: Emission<Input>) {
-            let newEmission: Emission<Output>
-            switch emission {
-            case .value(let value):
-                newEmission = .value(transformer(value))
-            case .finished:
-                newEmission = .finished
-            case .failed(let error):
-                newEmission = .failed(error)
+        public func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable
+            where S.Value == Output
+        {
+            upstream.subscribe(
+                Sub<S>(
+                    downstream: subscriber,
+                    transformer: transformer
+                )
+            )
+        }
+
+        @MainActor
+        private struct Sub<Downstream: Subscriber>: Subscriber
+            where Downstream.Value == Output
+        {
+
+            fileprivate init(
+                downstream: Downstream,
+                transformer: @escaping @MainActor (Upstream.Output) -> Output
+            ) {
+                self.downstream = downstream
+                self.transformer = transformer
             }
-            downstream.receive(emission: newEmission)
+
+            fileprivate func receive(emission: Emission<Upstream.Output>) {
+                let newEmission: Emission<Output>
+                switch emission {
+                case .value(let value):
+                    newEmission = .value(transformer(value))
+                case .finished:
+                    newEmission = .finished
+                case .failed(let error):
+                    newEmission = .failed(error)
+                }
+                downstream.receive(emission: newEmission)
+            }
+
+            private let downstream: Downstream
+            private let transformer: @MainActor (Upstream.Output)
+                -> Output
+
         }
+
     }
-
-    let transformer: @MainActor (Input) -> Output
-    let upstream: any Emitter<Input>
-
-    func subscribe<S: Subscriber>(_ subscriber: S)
-        -> AnyDisposable
-        where S.Value == Output {
-        upstream.subscribe(Sub<S>(downstream: subscriber, transformer: transformer))
-    }
-
 }

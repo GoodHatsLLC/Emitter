@@ -7,47 +7,40 @@ import Foundation
 @MainActor
 public final class PublishSubject<Value: Sendable>: Emitter, Source {
 
-    @inlinable
     public init() {}
 
     public typealias Output = Value
 
-    public var id: UUID = .init()
-
-    @usableFromInline
-    var subscriptions: Set<Subscription<Value>> = []
-    @usableFromInline
-    var isActive = true
+    private var subscriptions: Set<Subscription<Value>> = []
+    private var isActive = true
 }
 
 // MARK: - Source API
 extension PublishSubject {
-    @inlinable
     public func emit(_ emission: Emission<Value>) {
+        let subs = subscriptions
         switch emission {
         case .finished,
              .failed:
             isActive = false
+            subscriptions.removeAll()
         case _:
             break
         }
-        for subscription in subscriptions {
+        for subscription in subs {
             subscription.receive(emission: emission)
-        }
-        if !isActive {
-            subscriptions.removeAll()
         }
     }
 }
 
 // MARK: - Emitter API
 extension PublishSubject {
-    @inlinable
     public func subscribe<S: Subscriber>(
         _ subscriber: S
     )
         -> AnyDisposable
-        where S.Value == Value {
+        where S.Value == Value
+    {
         let subscription = Subscription<Value>(
             source: self,
             subscriber: subscriber
