@@ -19,7 +19,7 @@ extension Emitter {
 
             continuation.onTermination = { _ in
                 Task {
-                    await disposable.dispose()
+                    disposable.dispose()
                 }
             }
         }

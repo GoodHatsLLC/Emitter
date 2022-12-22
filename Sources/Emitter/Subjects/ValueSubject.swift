@@ -4,7 +4,6 @@ import Foundation
 
 // MARK: - ValueSubject
 
-@MainActor
 public final class ValueSubject<Value: Sendable>: Emitter, Source {
 
     public init(_ value: Value) {

@@ -2,7 +2,6 @@ import DisposableInterface
 
 // MARK: - Emitter
 
-@MainActor
 public protocol Emitter<Output> {
     associatedtype Output: Sendable
     func subscribe<S: Subscriber>(

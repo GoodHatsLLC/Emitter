@@ -3,7 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func map<NewOutput: Sendable>(
-        _ transformer: @escaping @MainActor (Output) -> NewOutput
+        _ transformer: @escaping (Output) -> NewOutput
     ) -> some Emitter<NewOutput> {
         Emitters.Map(upstream: self, transformer: transformer)
     }
@@ -14,18 +14,17 @@ extension Emitter {
 extension Emitters {
     // MARK: - Map
 
-    @MainActor
     public struct Map<Upstream: Emitter, Output: Sendable>: Emitter {
 
         public init(
             upstream: Upstream,
-            transformer: @escaping @MainActor (Upstream.Output) -> Output
+            transformer: @escaping (Upstream.Output) -> Output
         ) {
             self.transformer = transformer
             self.upstream = upstream
         }
 
-        public let transformer: @MainActor (Upstream.Output) -> Output
+        public let transformer: (Upstream.Output) -> Output
         public let upstream: Upstream
 
         public func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable
@@ -39,14 +38,14 @@ extension Emitters {
             )
         }
 
-        @MainActor
+
         private struct Sub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {
 
             fileprivate init(
                 downstream: Downstream,
-                transformer: @escaping @MainActor (Upstream.Output) -> Output
+                transformer: @escaping (Upstream.Output) -> Output
             ) {
                 self.downstream = downstream
                 self.transformer = transformer
@@ -66,7 +65,7 @@ extension Emitters {
             }
 
             private let downstream: Downstream
-            private let transformer: @MainActor (Upstream.Output)
+            private let transformer: (Upstream.Output)
                 -> Output
 
         }

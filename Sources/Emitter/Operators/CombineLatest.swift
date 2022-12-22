@@ -12,7 +12,7 @@ extension Emitter {
 // MARK: - Emitters.CombineLatest
 
 extension Emitters {
-    @MainActor
+
     public struct CombineLatest<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
         where UpstreamA.Output: Sendable, UpstreamB.Output: Sendable
     {
@@ -32,7 +32,7 @@ extension Emitters {
         public func subscribe<S: Subscriber>(_ subscriber: S)
             -> AnyDisposable where S.Value == Output
         {
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             let sub = Sub(downstream: subscriber)
             let mapA = Proxy(downstream: sub, joinInit: JoinSubInput.a)
             let mapB = Proxy(downstream: sub, joinInit: JoinSubInput.b)
@@ -51,7 +51,6 @@ extension Emitters {
             case b(OutputB)
         }
 
-        @MainActor
         private final class Sub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {
@@ -89,7 +88,6 @@ extension Emitters {
 
         }
 
-        @MainActor
         private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber where Downstream.Value == JoinSubInput {
 
             fileprivate init(

@@ -4,16 +4,15 @@ import XCTest
 
 // MARK: - FilterTests
 
-@MainActor
 final class FilterTests: XCTestCase {
 
-    var stage: DisposalStage!
+    var stage: DisposableStage!
 
-    override func setUp() async throws {
+    override func setUp() {
         stage = .init()
     }
 
-    override func tearDown() async throws {
+    override func tearDown() {
         stage.dispose()
         stage = nil
     }
@@ -64,7 +63,7 @@ final class FilterTests: XCTestCase {
             }
             XCTAssertNotNil(weakSourceA)
             stage.dispose()
-            stage = DisposalStage()
+            stage = DisposableStage()
         }
         XCTAssertNil(weakSourceA)
     }

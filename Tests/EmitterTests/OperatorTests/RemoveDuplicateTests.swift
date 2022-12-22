@@ -4,16 +4,15 @@ import XCTest
 
 // MARK: - RemoveDuplicatesTests
 
-@MainActor
 final class RemoveDuplicatesTests: XCTestCase {
 
-    var stage: DisposalStage!
+    var stage: DisposableStage!
 
-    override func setUp() async throws {
+    override func setUp() {
         stage = .init()
     }
 
-    override func tearDown() async throws {
+    override func tearDown() {
         stage.dispose()
         stage = nil
     }
@@ -65,7 +64,7 @@ final class RemoveDuplicatesTests: XCTestCase {
             }
             XCTAssertNotNil(weakSourceA)
             stage.dispose()
-            stage = DisposalStage()
+            stage = DisposableStage()
         }
         XCTAssertNil(weakSourceA)
         XCTAssertEqual([1, 2, 3, 1], record)

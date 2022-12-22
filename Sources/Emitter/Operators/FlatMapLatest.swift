@@ -3,7 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func flatMapLatest<NewOutput: Sendable>(
-        producer: @escaping @MainActor (Output) -> some Emitter<NewOutput>
+        producer: @escaping (Output) -> some Emitter<NewOutput>
     ) -> some Emitter<NewOutput> {
         Emitters.FlatMapLatest(upstream: self, producer: producer)
     }
@@ -14,18 +14,17 @@ extension Emitter {
 extension Emitters {
     // MARK: - FlatMapLatest
 
-    @MainActor
     public struct FlatMapLatest<Upstream: Emitter, Output: Sendable>: Emitter {
 
         public init(
             upstream: Upstream,
-            producer: @escaping @MainActor (Upstream.Output) -> some Emitter<Output>
+            producer: @escaping (Upstream.Output) -> some Emitter<Output>
         ) where Upstream.Output == Upstream.Output {
             self.producer = { producer($0).erase() }
             self.upstream = upstream
         }
 
-        public let producer: @MainActor (Upstream.Output) -> AnyEmitter<Output>
+        public let producer: (Upstream.Output) -> AnyEmitter<Output>
         public let upstream: Upstream
 
         public func subscribe<S: Subscriber>(_ subscriber: S)
@@ -41,7 +40,7 @@ extension Emitters {
             )
         }
 
-        @MainActor
+
         private final class Sub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {
@@ -49,7 +48,7 @@ extension Emitters {
             fileprivate init(
                 downstream: Downstream,
                 upstream: Upstream,
-                producer: @escaping @MainActor (Upstream.Output) -> AnyEmitter<Output>
+                producer: @escaping (Upstream.Output) -> AnyEmitter<Output>
             ) {
                 self.downstream = downstream
                 self.producer = producer
@@ -71,7 +70,7 @@ extension Emitters {
                 }
             }
 
-            @MainActor
+
             private struct InnerSub<Downstream: Subscriber>: Subscriber
                 where Downstream.Value == Output
             {
@@ -96,7 +95,7 @@ extension Emitters {
             }
 
             private let downstream: Downstream
-            private let producer: @MainActor (Upstream.Output) -> AnyEmitter<Output>
+            private let producer: (Upstream.Output) -> AnyEmitter<Output>
 
             private let upstream: Upstream
             private var current: InnerSub<Downstream>?

@@ -14,7 +14,6 @@ extension Emitter {
 extension Emitters {
     // MARK: - RemoveDuplicates
 
-    @MainActor
     public struct RemoveDuplicates<Upstream: Emitter, Output: Sendable>: Emitter where Output: Equatable,
         Upstream.Output == Output
     {
@@ -32,7 +31,7 @@ extension Emitters {
             upstream.subscribe(Sub<S>(downstream: subscriber))
         }
 
-        @MainActor
+
         private final class Sub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output, Output: Equatable
         {

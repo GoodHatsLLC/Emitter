@@ -38,7 +38,6 @@ extension Emitter {
 extension Emitters {
     // MARK: - Print
 
-    @MainActor
     public struct Print<Upstream: Emitter, Output: Sendable>: Emitter
         where Upstream.Output == Output
     {
@@ -96,7 +95,7 @@ extension Emitters {
             }
         }
 
-        @MainActor
+
         private struct Sub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {

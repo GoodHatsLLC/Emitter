@@ -4,7 +4,6 @@ import Foundation
 
 // MARK: - PublishSubject
 
-@MainActor
 public final class PublishSubject<Value: Sendable>: Emitter, Source {
 
     public init() {}

@@ -3,7 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func subscribeValue(
-        value: @escaping @MainActor (_ value: Output) -> Void
+        value: @escaping (_ value: Output) -> Void
     )
         -> AnyDisposable
     {
@@ -17,9 +17,9 @@ extension Emitter {
     }
 
     public func subscribe(
-        value: @escaping @MainActor (_ value: Output) -> Void,
-        finished: @escaping @MainActor () -> Void = {},
-        failed: @escaping @MainActor (_ error: Error) -> Void = { _ in }
+        value: @escaping (_ value: Output) -> Void,
+        finished: @escaping () -> Void = {},
+        failed: @escaping (_ error: Error) -> Void = { _ in }
     )
         -> AnyDisposable
     {
@@ -38,16 +38,16 @@ extension Emitter {
 private struct Subscribe<Value>: Subscriber {
 
     fileprivate init(
-        value: @MainActor @escaping (Value) -> Void,
-        finished: (@MainActor () -> Void)?,
-        failed: (@MainActor (Error) -> Void)?
+        value: @escaping (Value) -> Void,
+        finished: (() -> Void)?,
+        failed: ((Error) -> Void)?
     ) {
         valueFunc = value
         finishedFunc = finished
         failedFunc = failed
     }
 
-    @MainActor
+
     fileprivate func receive(emission: Emission<Value>) {
         switch emission {
         case .value(let value):
@@ -59,8 +59,8 @@ private struct Subscribe<Value>: Subscriber {
         }
     }
 
-    private let valueFunc: @MainActor (Value) -> Void
-    private let finishedFunc: (@MainActor () -> Void)?
-    private let failedFunc: (@MainActor (Error) -> Void)?
+    private let valueFunc: (Value) -> Void
+    private let finishedFunc: (() -> Void)?
+    private let failedFunc: ((Error) -> Void)?
 
 }

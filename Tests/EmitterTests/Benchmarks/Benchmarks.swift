@@ -6,7 +6,6 @@ import XCTest
 
 // MARK: - Benchmarks
 
-@MainActor
 final class Benchmarks: XCTestCase {
     let input = Array(repeating: 123, count: 99_999)
 }
@@ -14,10 +13,10 @@ final class Benchmarks: XCTestCase {
 // MARK: Map
 
 extension Benchmarks {
-    func test_map() {
+    func _test_map() {
         measure { // Time: 0.018 sec
             let sourceA: PublishSubject<Int> = .init()
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             sourceA
                 .map { $0 + 1 }
                 .subscribe { value in
@@ -32,7 +31,7 @@ extension Benchmarks {
     }
 
     #if canImport(Combine)
-    func test_map_combine() {
+    func _test_map_combine() {
         measure { // Time: 0.014 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             var stage = Set<AnyCancellable>()
@@ -55,10 +54,10 @@ extension Benchmarks {
 
 extension Benchmarks {
 
-    func test_compactMap() {
+    func _test_compactMap() {
         measure { // Time: 0.018 sec
             let sourceA: PublishSubject<Int> = .init()
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             var shouldNil = false
             sourceA
                 .compactMap {
@@ -77,7 +76,7 @@ extension Benchmarks {
     }
 
     #if canImport(Combine)
-    func test_compactMap_combine() {
+    func _test_compactMap_combine() {
         measure { // Time: 0.016 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             var stage = Set<AnyCancellable>()
@@ -104,9 +103,9 @@ extension Benchmarks {
 
 extension Benchmarks {
 
-    func test_flatMapLatest() {
+    func _test_flatMapLatest() {
         measure { // Time: 0.095 sec
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             let sourceA: PublishSubject<Int> = .init()
             let sourceB: ValueSubject<Int> = .init(1)
 
@@ -126,7 +125,7 @@ extension Benchmarks {
     }
 
     #if canImport(Combine)
-    func test_flatMapLatest_combine() {
+    func _test_flatMapLatest_combine() {
         measure { // Time: 0.104 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             let sourceB: CurrentValueSubject<Int, Never> = .init(1)
@@ -153,9 +152,9 @@ extension Benchmarks {
 
 extension Benchmarks {
 
-    func test_combineLatest() {
+    func _test_combineLatest() {
         measure { // Time: 0.045 sec
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             let sourceA: PublishSubject<Int> = .init()
             let sourceB: ValueSubject<Int> = .init(1)
 
@@ -173,7 +172,7 @@ extension Benchmarks {
     }
 
     #if canImport(Combine)
-    func test_combineLatest_combine() {
+    func _test_combineLatest_combine() {
         measure { // Time: 0.033 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             let sourceB: CurrentValueSubject<Int, Never> = .init(1)
@@ -196,9 +195,9 @@ extension Benchmarks {
 // MARK: Merge
 
 extension Benchmarks {
-    func test_merge() {
+    func _test_merge() {
         measure { // Time: 0.015 sec
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             let sourceA: PublishSubject<Int> = .init()
             let sourceB: ValueSubject<Int> = .init(1)
 
@@ -216,7 +215,7 @@ extension Benchmarks {
     }
 
     #if canImport(Combine)
-    func test_merge_combine() {
+    func _test_merge_combine() {
         measure { // Time: 0.015 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             let sourceB: CurrentValueSubject<Int, Never> = .init(1)
@@ -239,9 +238,9 @@ extension Benchmarks {
 // MARK: RemoveDuplicates
 
 extension Benchmarks {
-    func test_removeDuplicates() {
+    func _test_removeDuplicates() {
         measure { // Time: 0.023 sec
-            let stage = DisposalStage()
+            let stage = DisposableStage()
             let sourceA: PublishSubject<Int> = .init()
 
             sourceA
@@ -260,7 +259,7 @@ extension Benchmarks {
     }
 
     #if canImport(Combine)
-    func test_removeDuplicates_combine() {
+    func _test_removeDuplicates_combine() {
         measure { // Time: 0.030 sec
             let sourceA: PassthroughSubject<Int, Never> = .init()
             var stage = Set<AnyCancellable>()

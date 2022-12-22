@@ -4,20 +4,19 @@ import XCTest
 
 // MARK: - AsyncStreamTests
 
-@MainActor
 final class AsyncStreamTests: XCTestCase {
 
     var source: PublishSubject<String>!
-    var stage: DisposalStage!
+    var stage: DisposableStage!
 
-    override func setUp() async throws {
+    override func setUp() {
         source = .init()
         stage = .init()
     }
 
     override func tearDown() async throws {
         source = nil
-        stage.dispose()
+        await stage.dispose()
         stage = nil
     }
 

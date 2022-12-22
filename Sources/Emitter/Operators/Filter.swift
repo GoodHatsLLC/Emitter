@@ -3,7 +3,7 @@ import EmitterInterface
 
 extension Emitter {
     public func filter(
-        _ evaluator: @escaping @MainActor (Output) -> Bool
+        _ evaluator: @escaping (Output) -> Bool
     ) -> some Emitter<Output> {
         Emitters.Filter(upstream: self, evaluator: evaluator)
     }
@@ -14,21 +14,19 @@ extension Emitter {
 extension Emitters {
     // MARK: - Filter
 
-    @MainActor
     public struct Filter<Upstream: Emitter, Output: Sendable>: Emitter
         where Upstream.Output == Output
     {
 
-        @MainActor
         public init(
             upstream: Upstream,
-            evaluator: @escaping @MainActor (Output) -> Bool
+            evaluator: @escaping (Output) -> Bool
         ) where Upstream.Output == Output {
             self.evaluator = evaluator
             self.upstream = upstream
         }
 
-        public let evaluator: @MainActor (Output) -> Bool
+        public let evaluator: (Output) -> Bool
         public let upstream: Upstream
 
         public func subscribe<S: Subscriber>(_ subscriber: S)
@@ -41,7 +39,7 @@ extension Emitters {
         private struct Sub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {
-            fileprivate init(downstream: Downstream, evaluator: @escaping @MainActor (Output) -> Bool) {
+            fileprivate init(downstream: Downstream, evaluator: @escaping (Output) -> Bool) {
                 self.downstream = downstream
                 self.evaluator = evaluator
             }
@@ -64,7 +62,7 @@ extension Emitters {
             }
 
             private let downstream: Downstream
-            private let evaluator: @MainActor (Output)
+            private let evaluator: (Output)
                 -> Bool
 
         }

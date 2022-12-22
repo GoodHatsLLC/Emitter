@@ -4,18 +4,17 @@ import XCTest
 
 // MARK: - FinishTests
 
-@MainActor
 final class FinishTests: XCTestCase {
 
     var source: PublishSubject<String>!
-    var stage: DisposalStage!
+    var stage: DisposableStage!
 
-    override func setUp() async throws {
+    override func setUp() {
         source = .init()
         stage = .init()
     }
 
-    override func tearDown() async throws {
+    override func tearDown() {
         source = nil
         stage.dispose()
         stage = nil

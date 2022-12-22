@@ -14,7 +14,6 @@ extension Emitter {
 extension Emitters {
     // MARK: - Merge
 
-    @MainActor
     public struct Merge<UpstreamA: Emitter, UpstreamB: Emitter, Output: Sendable>: Emitter
         where UpstreamA.Output == Output, UpstreamB.Output == Output
     {
@@ -43,7 +42,7 @@ extension Emitters {
                 )
         }
 
-        @MainActor
+
         private final class IntermediateSub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {

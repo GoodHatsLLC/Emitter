@@ -15,7 +15,6 @@ extension Emitter {
 
 extension Emitters {
 
-    @MainActor
     public struct Union<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
         where UpstreamA.Output: EmitterInterface.Union.Unionable, UpstreamB.Output: EmitterInterface.Union.Unionable
     {
@@ -46,7 +45,7 @@ extension Emitters {
                 )
         }
 
-        @MainActor
+
         private final class IntermediateSub<Downstream: Subscriber>: Subscriber
             where Downstream.Value == Output
         {
@@ -102,7 +101,6 @@ extension Emitters {
 
         }
 
-        @MainActor
         private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber where Downstream.Value == Output {
 
             fileprivate init(

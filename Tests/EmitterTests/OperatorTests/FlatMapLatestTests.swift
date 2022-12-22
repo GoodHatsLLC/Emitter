@@ -4,16 +4,15 @@ import XCTest
 
 // MARK: - FlatMapLatestTests
 
-@MainActor
 final class FlatMapLatestTests: XCTestCase {
 
-    var stage: DisposalStage!
+    var stage: DisposableStage!
 
-    override func setUp() async throws {
+    override func setUp() {
         stage = .init()
     }
 
-    override func tearDown() async throws {
+    override func tearDown() {
         stage.dispose()
         stage = nil
     }
@@ -110,7 +109,7 @@ final class FlatMapLatestTests: XCTestCase {
             XCTAssertNotNil(weakSourceA)
             XCTAssertNotNil(weakSourceB)
             stage.dispose()
-            stage = DisposalStage()
+            stage = DisposableStage()
         }
         XCTAssertNil(weakSourceA)
         XCTAssertNil(weakSourceB)
@@ -152,7 +151,7 @@ final class FlatMapLatestTests: XCTestCase {
             XCTAssertNotNil(weakSourceA)
             XCTAssertNotNil(weakSourceB)
             stage.dispose()
-            stage = DisposalStage()
+            stage = DisposableStage()
         }
         XCTAssertNil(weakSourceA)
         XCTAssertNil(weakSourceB)
