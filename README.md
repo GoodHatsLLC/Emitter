@@ -8,7 +8,7 @@ It's intended as a learning resource. Its smaller footprint and simplicity might
 
 `Emitter`'s only focus is on simplicity of implementation. It has clear limitations:
 * Like `RxSwift` but `unlike` Combine it has no support for back pressure management or typed errors.
-* It is fully `@MainThread` bound.
+* It assumes a single threaded env.
 * It has a limited number of [implemented operators](https://github.com/GoodHatsLLC/Emitter/tree/main/Sources/Emitter/Operators).
 * The operators' speeds are [not quite competitive with Combine's](https://github.com/GoodHatsLLC/Emitter/blob/main/Tests/EmitterTests/Benchmarks/Benchmarks.swift).
 
