@@ -16,7 +16,7 @@ final class AsyncStreamTests: XCTestCase {
 
     override func tearDown() async throws {
         source = nil
-        await stage.dispose()
+        stage.dispose()
         stage = nil
     }
 
