@@ -5,29 +5,29 @@ import EmitterInterface
 
 public struct AnyEmitter<Output: Sendable>: Emitter {
 
-    fileprivate init(_ emitter: some Emitter<Output>) {
-        subscribeFunc = { emitter.subscribe($0) }
-    }
+  fileprivate init(_ emitter: some Emitter<Output>) {
+    subscribeFunc = { emitter.subscribe($0) }
+  }
 
-    private let subscribeFunc: (any Subscriber<Output>) -> AnyDisposable
+  private let subscribeFunc: (any Subscriber<Output>) -> AnyDisposable
 
-    public func subscribe<S: Subscriber>(
-        _ subscriber: S
-    )
-        -> AnyDisposable where S.Value == Output
-    {
-        subscribeFunc(subscriber)
-    }
+  public func subscribe<S: Subscriber>(
+    _ subscriber: S
+  )
+    -> AnyDisposable where S.Value == Output
+  {
+    subscribeFunc(subscriber)
+  }
 }
 
 extension AnyEmitter {
-    public func erase() -> AnyEmitter<Output> { self }
+  public func erase() -> AnyEmitter<Output> { self }
 }
 
 extension Emitter {
-    public func erase() -> AnyEmitter<Output> {
-        AnyEmitter(self)
-    }
+  public func erase() -> AnyEmitter<Output> {
+    AnyEmitter(self)
+  }
 
-    public func any() -> any Emitter<Output> { self }
+  public func any() -> any Emitter<Output> { self }
 }

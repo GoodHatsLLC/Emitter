@@ -6,121 +6,121 @@ import XCTest
 
 final class FinishTests: XCTestCase {
 
-    var source: PublishSubject<String>!
-    var stage: DisposableStage!
+  var source: PublishSubject<String>!
+  var stage: DisposableStage!
 
-    override func setUp() {
-        source = .init()
-        stage = .init()
-    }
+  override func setUp() {
+    source = .init()
+    stage = .init()
+  }
 
-    override func tearDown() {
-        source = nil
-        stage.dispose()
-        stage = nil
-    }
+  override func tearDown() {
+    source = nil
+    stage.dispose()
+    stage = nil
+  }
 
-    func testStream_valueDoesNotFinish() throws {
-        var record: [String] = []
-        var didComplete = false
-        var failure: Error?
-        source
-            .subscribe(
-                value: { value in
-                    record.append(value)
-                },
-                finished: {
-                    didComplete = true
-                },
-                failed: { error in
-                    failure = error
-                }
-            )
-            .stage(on: stage)
-        XCTAssertEqual(record.count, 0)
-
-        let entries = ["a", "b", "c", "d", "e"]
-
-        for entry in entries {
-            source.emit(.value(entry))
+  func testStream_valueDoesNotFinish() throws {
+    var record: [String] = []
+    var didComplete = false
+    var failure: Error?
+    source
+      .subscribe(
+        value: { value in
+          record.append(value)
+        },
+        finished: {
+          didComplete = true
+        },
+        failed: { error in
+          failure = error
         }
+      )
+      .stage(on: stage)
+    XCTAssertEqual(record.count, 0)
 
-        XCTAssertFalse(didComplete)
-        XCTAssertNil(failure)
+    let entries = ["a", "b", "c", "d", "e"]
+
+    for entry in entries {
+      source.emit(.value(entry))
     }
 
-    func testStream_failureFinishes() throws {
-        var record: [String] = []
-        var didComplete = false
-        var failure: Error?
-        source
-            .subscribe(
-                value: { value in
-                    record.append(value)
-                },
-                finished: {
-                    didComplete = true
-                },
-                failed: { error in
-                    failure = error
-                }
-            )
-            .stage(on: stage)
-        XCTAssertEqual(record.count, 0)
+    XCTAssertFalse(didComplete)
+    XCTAssertNil(failure)
+  }
 
-        let entries = ["a", "b", "c", "d", "e"]
-
-        for entry in entries {
-            if entry == "c" {
-                source.emit(.failed(Failure.sourceFail))
-            } else {
-                source.emit(.value(entry))
-            }
+  func testStream_failureFinishes() throws {
+    var record: [String] = []
+    var didComplete = false
+    var failure: Error?
+    source
+      .subscribe(
+        value: { value in
+          record.append(value)
+        },
+        finished: {
+          didComplete = true
+        },
+        failed: { error in
+          failure = error
         }
+      )
+      .stage(on: stage)
+    XCTAssertEqual(record.count, 0)
 
-        XCTAssertEqual(["a", "b"], record)
-        XCTAssertFalse(didComplete)
-        XCTAssert((failure as? Failure) == .sourceFail)
+    let entries = ["a", "b", "c", "d", "e"]
+
+    for entry in entries {
+      if entry == "c" {
+        source.emit(.failed(Failure.sourceFail))
+      } else {
+        source.emit(.value(entry))
+      }
     }
 
-    func testStream_finishCompletes() throws {
-        var record: [String] = []
-        var didComplete = false
+    XCTAssertEqual(["a", "b"], record)
+    XCTAssertFalse(didComplete)
+    XCTAssert((failure as? Failure) == .sourceFail)
+  }
 
-        source
-            .subscribe(
-                value: { value in
-                    record.append(value)
-                },
-                finished: {
-                    didComplete = true
-                },
-                failed: { _ in
-                }
-            )
-            .stage(on: stage)
-        XCTAssertEqual(record.count, 0)
+  func testStream_finishCompletes() throws {
+    var record: [String] = []
+    var didComplete = false
 
-        let entries = ["a", "b", "c", "d", "e"]
-
-        for entry in entries {
-            if entry == "c" {
-                source.emit(.finished)
-            } else {
-                source.emit(.value(entry))
-            }
+    source
+      .subscribe(
+        value: { value in
+          record.append(value)
+        },
+        finished: {
+          didComplete = true
+        },
+        failed: { _ in
         }
+      )
+      .stage(on: stage)
+    XCTAssertEqual(record.count, 0)
 
-        XCTAssertEqual(["a", "b"], record)
-        XCTAssert(didComplete)
+    let entries = ["a", "b", "c", "d", "e"]
+
+    for entry in entries {
+      if entry == "c" {
+        source.emit(.finished)
+      } else {
+        source.emit(.value(entry))
+      }
     }
+
+    XCTAssertEqual(["a", "b"], record)
+    XCTAssert(didComplete)
+  }
 
 }
 
 // MARK: FinishTests.Failure
 
 extension FinishTests {
-    enum Failure: Error {
-        case sourceFail
-    }
+  enum Failure: Error {
+    case sourceFail
+  }
 }
