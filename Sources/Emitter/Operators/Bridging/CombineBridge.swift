@@ -2,11 +2,11 @@
 import Combine
 
 extension Emitter {
-  var combinePublisher: some Publisher<Output, Error> {
+  public var combinePublisher: some Publisher<Output, Error> {
     CombineBridge(upstream: self)
   }
 
-  var combineDriver: some Publisher<Output, Never> {
+  public var combineDriver: some Publisher<Output, Never> {
     CombineBridge(upstream: self)
       .map { Optional($0) }
       .replaceError(with: nil)
