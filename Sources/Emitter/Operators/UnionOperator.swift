@@ -1,11 +1,10 @@
 import Disposable
-import EmitterInterface
 
 extension Emitter {
   public func union<Other: Emitter>(
     _ other: Other
-  ) -> some Emitter<Union.Of2<Output, Other.Output>>
-    where Other.Output: Union.Unionable, Output: Union.Unionable
+  ) -> some Emitter<UnionType.Of2<Output, Other.Output>>
+    where Other.Output: UnionType.Unionable, Output: UnionType.Unionable
   {
     Emitters.Union(upstreamA: self, upstreamB: other)
   }
@@ -16,7 +15,7 @@ extension Emitter {
 extension Emitters {
 
   public struct Union<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
-    where UpstreamA.Output: EmitterInterface.Union.Unionable, UpstreamB.Output: EmitterInterface.Union.Unionable
+    where UpstreamA.Output: UnionType.Unionable, UpstreamB.Output: UnionType.Unionable
   {
 
     public init(
@@ -27,7 +26,7 @@ extension Emitters {
       self.upstreamB = upstreamB
     }
 
-    public typealias Output = EmitterInterface.Union.Of2<UpstreamA.Output, UpstreamB.Output>
+    public typealias Output = UnionType.Of2<UpstreamA.Output, UpstreamB.Output>
 
     public let upstreamA: UpstreamA
     public let upstreamB: UpstreamB
@@ -65,14 +64,14 @@ extension Emitters {
           .subscribe(
             Proxy(
               downstream: self,
-              joinInit: EmitterInterface.Union.Of2.a
+              joinInit: UnionType.Of2.a
             )
           )
         let disposableB = upstreamB
           .subscribe(
             Proxy(
               downstream: self,
-              joinInit: EmitterInterface.Union.Of2.b
+              joinInit: UnionType.Of2.b
             )
           )
         let disposable = AnyDisposable {

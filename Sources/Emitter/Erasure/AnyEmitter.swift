@@ -1,5 +1,4 @@
 import Disposable
-import EmitterInterface
 
 // MARK: - AnyEmitter
 

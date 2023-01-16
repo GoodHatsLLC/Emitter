@@ -21,13 +21,6 @@ let package = Package(
     .target(
       name: "Emitter",
       dependencies: [
-        "EmitterInterface",
-        "Disposable",
-      ]
-    ),
-    .target(
-      name: "EmitterInterface",
-      dependencies: [
         "Disposable",
       ]
     ),

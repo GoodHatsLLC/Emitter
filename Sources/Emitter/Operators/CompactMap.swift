@@ -1,5 +1,4 @@
 import Disposable
-import EmitterInterface
 
 extension Emitter {
   public func compactMap<NewOutput: Sendable>(

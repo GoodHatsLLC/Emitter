@@ -1,9 +1,9 @@
-// MARK: - Union
+// MARK: - UnionType
 
-public enum Union {}
+public enum UnionType {}
 
 // MARK: implementation
-extension Union {
+extension UnionType {
 
   public typealias Unionable = Hashable & Sendable
 

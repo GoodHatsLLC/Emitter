@@ -1,4 +1,4 @@
-import DisposableInterface
+import Disposable
 
 // MARK: - Emitter
 

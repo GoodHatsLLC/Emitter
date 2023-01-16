@@ -1,5 +1,5 @@
 import Disposable
-import EmitterInterface
+
 import Foundation
 
 // MARK: - PublishSubject

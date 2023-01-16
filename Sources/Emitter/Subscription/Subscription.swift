@@ -1,6 +1,5 @@
 import Disposable
-import DisposableInterface
-import EmitterInterface
+import Disposable
 
 // MARK: - Subscription
 

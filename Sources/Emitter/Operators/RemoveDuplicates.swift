@@ -1,5 +1,4 @@
 import Disposable
-import EmitterInterface
 
 extension Emitter {
   public func removeDuplicates() -> some Emitter<Output>
