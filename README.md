@@ -1,6 +1,6 @@
 # Emitter 🔴-🟢-🔵
 
-`Emitter` is a basic implementation of [Reactive Streams](http://www.reactive-streams.org/) in the style of [RxSwift](https://github.com/ReactiveX/RxSwift) or Combine.  
+`Emitter` is a simple implementation of [Reactive Streams](http://www.reactive-streams.org/) like [RxSwift](https://github.com/ReactiveX/RxSwift) or Combine.  
 It is used internally in the [https://github.com/GoodHatsLLC/StateTree](StateTree) framework.
 
 ## Features:
