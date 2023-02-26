@@ -6,29 +6,26 @@ import XCTest
 
 final class MapTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_compactMap() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
     let source = PublishSubject<String>()
 
     source
       .map { "\($0)-and-stuff" }
       .subscribe { output in
-        record.append(output)
+        record.value.append(output)
       }
       .stage(on: stage)
 
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
 
     let entries: [String] = ["a", "b", "c", "d", "e"]
 
@@ -36,7 +33,7 @@ final class MapTests: XCTestCase {
       source.emit(.value(entry))
     }
 
-    XCTAssertEqual(["a-and-stuff", "b-and-stuff", "c-and-stuff", "d-and-stuff", "e-and-stuff"], record)
+    XCTAssertEqual(["a-and-stuff", "b-and-stuff", "c-and-stuff", "d-and-stuff", "e-and-stuff"], record.value)
   }
 
   func test_dispose_releasesResources() throws {
@@ -63,7 +60,6 @@ final class MapTests: XCTestCase {
       }
       XCTAssertNotNil(weakSourceA)
       stage.dispose()
-      stage = DisposableStage()
     }
     XCTAssertNil(weakSourceA)
   }

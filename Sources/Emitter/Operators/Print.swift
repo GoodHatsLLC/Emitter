@@ -2,7 +2,7 @@ import Disposable
 
 // MARK: - PrintTypes
 
-public enum PrintTypes: Hashable, CaseIterable {
+public enum PrintTypes: Hashable, CaseIterable, Sendable {
   case initializer
   case subscribe
   case finished

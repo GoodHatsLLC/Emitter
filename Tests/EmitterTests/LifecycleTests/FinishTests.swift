@@ -7,17 +7,15 @@ import XCTest
 final class FinishTests: XCTestCase {
 
   var source: PublishSubject<String>!
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
   override func setUp() {
     source = .init()
-    stage = .init()
   }
 
   override func tearDown() {
     source = nil
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_valueDoesNotFinish() throws {

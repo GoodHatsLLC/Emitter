@@ -12,7 +12,7 @@ extension Emitter {
 
 extension Emitters {
 
-  public struct CombineLatest<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
+  public struct CombineLatest<UpstreamA: Emitter & Sendable, UpstreamB: Emitter & Sendable>: Emitter, Sendable
     where UpstreamA.Output: Sendable, UpstreamB.Output: Sendable
   {
 

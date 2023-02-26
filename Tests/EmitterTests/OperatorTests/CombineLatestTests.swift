@@ -6,30 +6,27 @@ import XCTest
 
 final class CombineLatestTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_combineLatest() throws {
-    var record: [Tuple.Size2<Int, String>] = []
+    let record: Unchecked<[Tuple.Size2<Int, String>]> = .init([])
     let sourceA: PublishSubject<Int> = .init()
     let sourceB: PublishSubject<String> = .init()
 
     sourceA
       .combineLatest(sourceB)
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
       .stage(on: stage)
 
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
 
     sourceA.emit(.value(1))
     sourceA.emit(.value(2))
@@ -47,12 +44,12 @@ final class CombineLatestTests: XCTestCase {
 
     XCTAssertEqual(
       intended,
-      record
+      record.value
     )
   }
 
   func test_dispose_releasesResources() throws {
-    var record: [Tuple.Size2<Int, String>] = []
+    let record: Unchecked<[Tuple.Size2<Int, String>]> = .init([])
     weak var weakSourceA: PublishSubject<Int>?
     weak var weakSourceB: ValueSubject<String>?
 
@@ -66,7 +63,7 @@ final class CombineLatestTests: XCTestCase {
         sourceA
           .combineLatest(sourceB)
           .subscribe { value in
-            record.append(value)
+            record.value.append(value)
           }
           .stage(on: stage)
 
@@ -80,7 +77,6 @@ final class CombineLatestTests: XCTestCase {
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.dispose()
-      stage = DisposableStage()
     }
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)

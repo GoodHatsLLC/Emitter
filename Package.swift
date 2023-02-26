@@ -15,7 +15,7 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: "0.4.0"),
+    .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: .init(0, 6, 0)),
   ],
   targets: [
     .target(
@@ -26,7 +26,7 @@ let package = Package(
     ),
     .testTarget(
       name: "EmitterTests",
-      dependencies: ["Emitter"]
+      dependencies: ["Emitter", "Disposable"]
     ),
   ]
 )

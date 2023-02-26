@@ -2,7 +2,7 @@ import Disposable
 
 extension Emitter {
   public func flatMapLatest<NewOutput: Sendable>(
-    producer: @escaping (Output) -> some Emitter<NewOutput>
+    producer: @escaping @Sendable (Output) -> some Emitter<NewOutput>
   ) -> some Emitter<NewOutput> {
     Emitters.FlatMapLatest(upstream: self, producer: producer)
   }
@@ -17,13 +17,13 @@ extension Emitters {
 
     public init(
       upstream: Upstream,
-      producer: @escaping (Upstream.Output) -> some Emitter<Output>
+      producer: @escaping @Sendable (Upstream.Output) -> some Emitter<Output>
     ) where Upstream.Output == Upstream.Output {
       self.producer = { producer($0).erase() }
       self.upstream = upstream
     }
 
-    public let producer: (Upstream.Output) -> AnyEmitter<Output>
+    public let producer: @Sendable (Upstream.Output) -> AnyEmitter<Output>
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S)

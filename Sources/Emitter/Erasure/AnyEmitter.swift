@@ -8,7 +8,8 @@ public struct AnyEmitter<Output: Sendable>: Emitter {
     subscribeFunc = { emitter.subscribe($0) }
   }
 
-  private let subscribeFunc: (any Subscriber<Output>) -> AnyDisposable
+  private let subscribeFunc: @Sendable (any Subscriber<Output>)
+    -> AnyDisposable
 
   public func subscribe<S: Subscriber>(
     _ subscriber: S

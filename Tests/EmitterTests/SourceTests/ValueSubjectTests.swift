@@ -6,15 +6,12 @@ import XCTest
 
 final class ValueSubjectTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func test_emission() throws {

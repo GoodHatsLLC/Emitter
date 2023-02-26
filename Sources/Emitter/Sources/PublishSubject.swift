@@ -4,12 +4,14 @@ import Foundation
 
 // MARK: - PublishSubject
 
-public final class PublishSubject<Value: Sendable>: Emitter, Source {
+public final class PublishSubject<Value: Sendable>: Emitter, Subject, @unchecked
+Sendable {
 
   public init() {}
 
   public typealias Output = Value
 
+  private let lock = NSLock()
   private var subscriptions: Set<Subscription<Value>> = []
   private var isActive = true
 }
@@ -41,17 +43,27 @@ extension PublishSubject {
     where S.Value == Value
   {
     let subscription = Subscription<Value>(
-      source: self,
       subscriber: subscriber
     )
-    if isActive {
-      subscriptions.insert(subscription)
+    let didSubscribe = lock
+      .withLock {
+        if isActive {
+          subscriptions.insert(subscription)
+        }
+        return isActive
+      }
+
+    if didSubscribe {
+      return AnyDisposable {
+        let disposable = self.lock.withLock {
+          self.subscriptions.remove(subscription)
+        }
+        disposable?.dispose()
+      }
     } else {
       subscription.receive(emission: .finished)
       subscription.dispose()
-    }
-    return AnyDisposable {
-      self.subscriptions.remove(subscription)?.dispose()
+      return subscription.erase()
     }
   }
 }

@@ -2,7 +2,7 @@ import Disposable
 
 extension Emitter {
   public func map<NewOutput: Sendable>(
-    _ transformer: @escaping (Output) -> NewOutput
+    _ transformer: @escaping @Sendable (Output) -> NewOutput
   ) -> some Emitter<NewOutput> {
     Emitters.Map(upstream: self, transformer: transformer)
   }
@@ -17,13 +17,13 @@ extension Emitters {
 
     public init(
       upstream: Upstream,
-      transformer: @escaping (Upstream.Output) -> Output
+      transformer: @escaping @Sendable (Upstream.Output) -> Output
     ) {
       self.transformer = transformer
       self.upstream = upstream
     }
 
-    public let transformer: (Upstream.Output) -> Output
+    public let transformer: @Sendable (Upstream.Output) -> Output
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable

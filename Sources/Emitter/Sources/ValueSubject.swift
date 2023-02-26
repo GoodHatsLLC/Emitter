@@ -1,10 +1,10 @@
 import Disposable
-
 import Foundation
 
 // MARK: - ValueSubject
 
-public final class ValueSubject<Value: Sendable>: Emitter, Source {
+public final class ValueSubject<Value: Sendable>: Emitter, Subject, @unchecked
+Sendable {
 
   public init(_ value: Value) {
     isActive = true
@@ -14,13 +14,17 @@ public final class ValueSubject<Value: Sendable>: Emitter, Source {
   public typealias Output = Value
 
   public var value: Value {
-    get { _value }
+    get {
+      lock.withLock {
+        _value
+      }
+    }
     set {
-      _value = newValue
-      emit(value: newValue)
+      emit(.value(newValue))
     }
   }
 
+  private let lock = NSLock()
   private var isActive: Bool
   private var _value: Value
   private var subscriptions: Set<Subscription<Value>> = []
@@ -30,25 +34,25 @@ public final class ValueSubject<Value: Sendable>: Emitter, Source {
 extension ValueSubject {
 
   public func emit(_ emission: Emission<Value>) {
+    let subs = lock.withLock {
+      stateEffects(emission)
+    }
+    for sub in subs {
+      sub.receive(emission: emission)
+    }
+  }
+
+  private func stateEffects(_ emission: Emission<Value>) -> Set<Subscription<Value>> {
+    let subs = subscriptions
     switch emission {
     case .finished,
          .failed:
       isActive = false
-      let subs = subscriptions
       subscriptions.removeAll()
-      for subscription in subs {
-        subscription.receive(emission: emission)
-      }
     case .value(let value):
-      self.value = value
+      _value = value
     }
-  }
-
-  func emit(value: Value) {
-    for subscription in subscriptions {
-      subscription
-        .receive(emission: .value(value))
-    }
+    return subs
   }
 
 }
@@ -62,20 +66,29 @@ extension ValueSubject {
     where S.Value == Value
   {
     let subscription = Subscription<Value>(
-      source: self,
       subscriber: subscriber
     )
 
-    if isActive {
-      subscriptions.insert(subscription)
+    let didSubscribe = lock
+      .withLock {
+        if isActive {
+          subscriptions.insert(subscription)
+        }
+        return isActive
+      }
+
+    if didSubscribe {
       subscription.receive(emission: .value(value))
+      return AnyDisposable {
+        let disposable = self.lock.withLock {
+          self.subscriptions.remove(subscription)
+        }
+        disposable?.dispose()
+      }
     } else {
       subscription.receive(emission: .finished)
       subscription.dispose()
-    }
-
-    return AnyDisposable {
-      self.subscriptions.remove(subscription)?.dispose()
+      return subscription.erase()
     }
   }
 }

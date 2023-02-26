@@ -95,7 +95,7 @@ extension Emitters {
         }
       }
 
-      private weak var disposable: AnyDisposable?
+      private var disposable: AnyDisposable?
 
     }
 

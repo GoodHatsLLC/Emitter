@@ -6,24 +6,22 @@ import XCTest
 
 final class AsyncStreamTests: XCTestCase {
 
-  var source: PublishSubject<String>!
-  var stage: DisposableStage!
+  var source: PublishSubject<String> = .init()
+  let stage = DisposableStage()
 
   override func setUp() {
     source = .init()
-    stage = .init()
   }
 
   override func tearDown() async throws {
-    source = nil
-    stage.dispose()
-    stage = nil
+    source = .init()
+    stage.reset()
   }
 
   func testStream_publishesInOrder_toAsyncIteration() async throws {
-    let handle = Task {
+    let handle = Task { [values = source.values] in
       var record: [String] = []
-      for try await value in source.values {
+      for try await value in values {
         record.append(value)
       }
       return record
@@ -31,13 +29,13 @@ final class AsyncStreamTests: XCTestCase {
 
     let entries = ["a", "b", "c", "d", "e"]
 
-    _ = await Task {
+    _ = await Task { [source] in
       for entry in entries {
         source.emit(.value(entry))
       }
     }.result
 
-    await attemptTaskFlushHack()
+    await Task.flushHack()
 
     // cancel task to finish
     handle.cancel()
@@ -47,19 +45,17 @@ final class AsyncStreamTests: XCTestCase {
   }
 
   func testStream_finishes_asyncIteration() async throws {
-    let handle = Task {
+    let handle = Task { [values = source.values] in
       var record: [String] = []
-      for try await value in source.values {
+      for try await value in values {
         record.append(value)
       }
       return record
     }
 
-    await attemptTaskFlushHack(count: 1)
-
     let entries = ["a", "b", "c"]
 
-    _ = await Task {
+    _ = await Task { [source] in
       for entry in entries {
         source.emit(.value(entry))
       }
@@ -79,11 +75,5 @@ final class AsyncStreamTests: XCTestCase {
 extension AsyncStreamTests {
   enum Failure: Error {
     case sourceFail
-  }
-}
-
-private func attemptTaskFlushHack(count: Int = 25) async {
-  for _ in 0..<count {
-    _ = await Task { try await Task.sleep(nanoseconds: 1 * USEC_PER_SEC) }.result
   }
 }

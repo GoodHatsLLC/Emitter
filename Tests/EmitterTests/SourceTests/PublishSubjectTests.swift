@@ -6,59 +6,56 @@ import XCTest
 
 final class PublishSubjectTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testPublishSubject_doesNotPublish_beforeAnySend() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
     let source: PublishSubject<String> = .init()
     source
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
       .stage(on: stage)
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
   }
 
   func testPublishSubject_doesNotPublish_toUnstagedSubscription() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
     let source: PublishSubject<String> = .init()
     _ = source
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
     source.emit(.value("some value"))
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
   }
 
   func testPublishSubject_doesNotReplaySend() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
     let source: PublishSubject<String> = .init()
     source.emit(.value("some value"))
     source
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
       .stage(on: stage)
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
   }
 
   func test_emission() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
 
     let source: PublishSubject<String> = .init()
 
     source
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
       .stage(on: stage)
 
@@ -66,11 +63,11 @@ final class PublishSubjectTests: XCTestCase {
     source.emit(.value("b"))
     source.emit(.value("c"))
 
-    XCTAssertEqual(["a", "b", "c"], record)
+    XCTAssertEqual(["a", "b", "c"], record.value)
   }
 
   func test_flatMap() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
 
     let sourceA: PublishSubject<Int> = .init()
     let sourceB: PublishSubject<String> = .init()
@@ -82,7 +79,7 @@ final class PublishSubjectTests: XCTestCase {
         }
       }
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
       .stage(on: stage)
 
@@ -94,18 +91,18 @@ final class PublishSubjectTests: XCTestCase {
     sourceA.emit(.value(0))
     sourceB.emit(.value("c"))
 
-    XCTAssertEqual(["a:2", "b:2", "c:0"], record)
+    XCTAssertEqual(["a:2", "b:2", "c:0"], record.value)
   }
 
   func testPublishSubject_publishesInOrder_toSubscription() throws {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
     let source: PublishSubject<String> = .init()
     source
       .subscribe { value in
-        record.append(value)
+        record.value.append(value)
       }
       .stage(on: stage)
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
 
     let entries = ["a", "b", "c", "d", "e"]
 
@@ -113,7 +110,7 @@ final class PublishSubjectTests: XCTestCase {
       source.emit(.value(entry))
     }
 
-    XCTAssertEqual(entries, record)
+    XCTAssertEqual(entries, record.value)
   }
 
 }

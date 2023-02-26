@@ -1,19 +1,7 @@
 import Disposable
+import Foundation
 
 extension Emitter {
-  public func subscribeValue(
-    value: @escaping (_ value: Output) -> Void
-  )
-    -> AnyDisposable
-  {
-    subscribe(
-      Subscribe(
-        value: value,
-        finished: nil,
-        failed: nil
-      )
-    )
-  }
 
   public func subscribe(
     value: @escaping (_ value: Output) -> Void,

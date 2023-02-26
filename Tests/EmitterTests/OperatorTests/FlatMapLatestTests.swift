@@ -6,21 +6,19 @@ import XCTest
 
 final class FlatMapLatestTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_flatMapLatest() throws {
     var record: [String] = []
     let sourceA: PublishSubject<Int> = .init()
     let sourceZ: PublishSubject<()> = .init()
+    @Sendable
     func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
@@ -50,6 +48,7 @@ final class FlatMapLatestTests: XCTestCase {
     var record: [String] = []
     let sourceA: ValueSubject<Int> = .init(0)
     let sourceZ: ValueSubject<()> = .init(())
+    @Sendable
     func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
@@ -109,7 +108,6 @@ final class FlatMapLatestTests: XCTestCase {
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.dispose()
-      stage = DisposableStage()
     }
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)
@@ -151,7 +149,6 @@ final class FlatMapLatestTests: XCTestCase {
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.dispose()
-      stage = DisposableStage()
     }
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)

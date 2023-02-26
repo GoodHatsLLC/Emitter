@@ -58,11 +58,11 @@ extension Benchmarks {
     measure { // Time: 0.018 sec
       let sourceA: PublishSubject<Int> = .init()
       let stage = DisposableStage()
-      var shouldNil = false
+      let shouldNil = Unchecked(false)
       sourceA
         .compactMap {
-          shouldNil = !shouldNil
-          return shouldNil ? nil : $0
+          shouldNil.value = !shouldNil.value
+          return shouldNil.value ? nil : $0
         }
         .subscribe { value in
           blackHole(value)

@@ -6,15 +6,12 @@ import XCTest
 
 final class MergeTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_merge() throws {
@@ -70,8 +67,7 @@ final class MergeTests: XCTestCase {
       }
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
-      stage.dispose()
-      stage = DisposableStage()
+      stage.reset()
     }
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)

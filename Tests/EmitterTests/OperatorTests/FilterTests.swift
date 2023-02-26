@@ -6,15 +6,12 @@ import XCTest
 
 final class FilterTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_compactMap() throws {
@@ -63,7 +60,6 @@ final class FilterTests: XCTestCase {
       }
       XCTAssertNotNil(weakSourceA)
       stage.dispose()
-      stage = DisposableStage()
     }
     XCTAssertNil(weakSourceA)
   }

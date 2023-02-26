@@ -6,29 +6,26 @@ import XCTest
 
 final class RemoveDuplicatesTests: XCTestCase {
 
-  var stage: DisposableStage!
+  let stage = DisposableStage()
 
-  override func setUp() {
-    stage = .init()
-  }
+  override func setUp() {}
 
   override func tearDown() {
-    stage.dispose()
-    stage = nil
+    stage.reset()
   }
 
   func testStream_removeDuplicates() {
-    var record: [String] = []
+    let record: Unchecked<[String]> = .init([])
     let source = PublishSubject<String>()
 
     source
       .removeDuplicates()
       .subscribe { output in
-        record.append(output)
+        record.value.append(output)
       }
       .stage(on: stage)
 
-    XCTAssertEqual(record.count, 0)
+    XCTAssertEqual(record.value.count, 0)
 
     let entries: [String] = ["a", "a", "d", "e", "e"]
 
@@ -36,11 +33,11 @@ final class RemoveDuplicatesTests: XCTestCase {
       source.emit(.value(entry))
     }
 
-    XCTAssertEqual(["a", "d", "e"], record)
+    XCTAssertEqual(["a", "d", "e"], record.value)
   }
 
   func test_dispose_releasesResources() throws {
-    var record: [Int] = []
+    let record: Unchecked<[Int]> = .init([])
     weak var weakSourceA: PublishSubject<Int>?
 
     autoreleasepool {
@@ -51,7 +48,7 @@ final class RemoveDuplicatesTests: XCTestCase {
         sourceA
           .removeDuplicates()
           .subscribe { value in
-            record.append(value)
+            record.value.append(value)
           }
           .stage(on: stage)
 
@@ -64,10 +61,9 @@ final class RemoveDuplicatesTests: XCTestCase {
       }
       XCTAssertNotNil(weakSourceA)
       stage.dispose()
-      stage = DisposableStage()
     }
     XCTAssertNil(weakSourceA)
-    XCTAssertEqual([1, 2, 3, 1], record)
+    XCTAssertEqual([1, 2, 3, 1], record.value)
   }
 
 }
