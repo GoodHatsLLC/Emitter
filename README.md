@@ -13,9 +13,9 @@ It is used internally in the [StateTree architecture](https://github.com/GoodHat
 
 `Emitter` is intended to be simple. It has some limitations:
 * It's in beta and not nearly as well tested as any of the various alternatives.
-* Like `RxSwift` but `unlike` Combine it has no support for back pressure management or typed errors.
+* Like `RxSwift` but unlike `Combine` it has no support for back pressure management or typed errors.
 * It has a limited number of [implemented operators](https://github.com/GoodHatsLLC/Emitter/tree/main/Sources/Emitter/Operators).
-* It does not perform as well as [Combine](https://github.com/GoodHatsLLC/Emitter/blob/main/Tests/EmitterTests/Benchmarks/Benchmarks.swift).
+* It isn't as performant as the various alternative reactive streams implementations.
 
 ## Operator performance
 
