@@ -14,7 +14,7 @@ Sendable {
 extension Task where Success == (), Failure == Error {
   static func flushHack(count: Int = 25) async {
     for _ in 0..<count {
-      _ = await Task<(), Error> { try await Task<_, Never>.sleep(nanoseconds: 1 * USEC_PER_SEC) }.result
+      _ = await Task<(), Error> { try await Task<_, Never>.sleep(nanoseconds: 1_000_000) }.result
     }
   }
 

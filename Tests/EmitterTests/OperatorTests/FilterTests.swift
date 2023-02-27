@@ -40,8 +40,8 @@ final class FilterTests: XCTestCase {
     var record: [Int] = []
     weak var weakSourceA: PublishSubject<Int>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: PublishSubject<Int> = .init()
         weakSourceA = sourceA
 
@@ -57,10 +57,10 @@ final class FilterTests: XCTestCase {
         sourceA.emit(.value(2))
         sourceA.emit(.value(99))
         sourceA.emit(.value(3))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()
-    }
+    })()
     XCTAssertNil(weakSourceA)
   }
 

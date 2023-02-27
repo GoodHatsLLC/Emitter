@@ -79,8 +79,8 @@ final class FlatMapLatestTests: XCTestCase {
     weak var weakSourceA: PublishSubject<Int>?
     weak var weakSourceB: ValueSubject<String>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: PublishSubject<Int> = .init()
         let sourceB: ValueSubject<String> = .init("initial")
         weakSourceA = sourceA
@@ -104,11 +104,11 @@ final class FlatMapLatestTests: XCTestCase {
         sourceA.emit(.value(3))
         sourceA.emit(.value(0))
         sourceB.emit(.value("c"))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.dispose()
-    }
+    })()
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)
 
@@ -120,8 +120,8 @@ final class FlatMapLatestTests: XCTestCase {
     weak var weakSourceA: ValueSubject<Int>?
     weak var weakSourceB: PublishSubject<String>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: ValueSubject<Int> = .init(0)
         let sourceB: PublishSubject<String> = .init()
         weakSourceA = sourceA
@@ -145,11 +145,11 @@ final class FlatMapLatestTests: XCTestCase {
         sourceA.emit(.value(3))
         sourceA.emit(.value(0))
         sourceB.emit(.value("c"))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.dispose()
-    }
+    })()
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)
 

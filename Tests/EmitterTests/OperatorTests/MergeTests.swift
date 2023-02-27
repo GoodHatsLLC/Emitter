@@ -43,8 +43,8 @@ final class MergeTests: XCTestCase {
     weak var weakSourceA: PublishSubject<Int>?
     weak var weakSourceB: PublishSubject<String>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: PublishSubject<Int> = .init()
         let sourceB: PublishSubject<String> = .init()
         weakSourceA = sourceA
@@ -64,11 +64,11 @@ final class MergeTests: XCTestCase {
         sourceA.emit(.value(3))
         sourceB.emit(.value("b"))
         sourceB.emit(.value("c"))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.reset()
-    }
+    })()
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)
 

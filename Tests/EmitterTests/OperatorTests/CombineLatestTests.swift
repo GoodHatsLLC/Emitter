@@ -53,8 +53,8 @@ final class CombineLatestTests: XCTestCase {
     weak var weakSourceA: PublishSubject<Int>?
     weak var weakSourceB: ValueSubject<String>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: PublishSubject<Int> = .init()
         let sourceB: ValueSubject<String> = .init("Hi")
         weakSourceA = sourceA
@@ -73,11 +73,11 @@ final class CombineLatestTests: XCTestCase {
         sourceA.emit(.value(3))
         sourceB.emit(.value("b"))
         sourceB.emit(.value("c"))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
       stage.dispose()
-    }
+    })()
     XCTAssertNil(weakSourceA)
     XCTAssertNil(weakSourceB)
   }

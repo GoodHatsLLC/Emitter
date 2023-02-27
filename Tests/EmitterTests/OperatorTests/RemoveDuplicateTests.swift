@@ -40,8 +40,8 @@ final class RemoveDuplicatesTests: XCTestCase {
     let record: Unchecked<[Int]> = .init([])
     weak var weakSourceA: PublishSubject<Int>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: PublishSubject<Int> = .init()
         weakSourceA = sourceA
 
@@ -58,10 +58,10 @@ final class RemoveDuplicatesTests: XCTestCase {
         sourceA.emit(.value(3))
         sourceA.emit(.value(3))
         sourceA.emit(.value(1))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()
-    }
+    })()
     XCTAssertNil(weakSourceA)
     XCTAssertEqual([1, 2, 3, 1], record.value)
   }

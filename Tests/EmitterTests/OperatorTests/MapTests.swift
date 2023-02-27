@@ -40,8 +40,8 @@ final class MapTests: XCTestCase {
     var record: [Int] = []
     weak var weakSourceA: PublishSubject<Int>?
 
-    autoreleasepool {
-      autoreleasepool {
+    ({
+      ({
         let sourceA: PublishSubject<Int> = .init()
         weakSourceA = sourceA
 
@@ -57,10 +57,10 @@ final class MapTests: XCTestCase {
         sourceA.emit(.value(3))
         sourceA.emit(.value(4))
         sourceA.emit(.value(5))
-      }
+      })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()
-    }
+    })()
     XCTAssertNil(weakSourceA)
   }
 
