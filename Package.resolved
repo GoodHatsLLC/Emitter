@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/GoodHatsLLC/Disposable.git",
       "state" : {
-        "revision" : "ca65c7804f5e4754f86b2ba367de901e7f6629af",
-        "version" : "0.6.0"
+        "revision" : "bc36c179b694a2f319d1abd487dcf016e4317bf4",
+        "version" : "0.6.1"
       }
     }
   ],

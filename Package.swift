@@ -15,7 +15,7 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: .init(0, 6, 0)),
+    .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: .init(0, 6, 1)),
   ],
   targets: [
     .target(
