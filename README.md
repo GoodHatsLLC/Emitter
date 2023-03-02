@@ -12,7 +12,7 @@ It is used internally in the [StateTree architecture](https://github.com/GoodHat
 ## Limitations
 
 `Emitter` is intended to be simple. It has some limitations:
-* It's in beta and neith as well tested or as performant as any of the various alternatives.
+* It's in beta and is neither as well tested nor as performant as any of the various alternatives.
 * Like `RxSwift` but unlike `Combine` it has no support for back pressure management or typed errors.
 * It has a limited number of [implemented operators](https://github.com/GoodHatsLLC/Emitter/tree/main/Sources/Emitter/Operators).
 
