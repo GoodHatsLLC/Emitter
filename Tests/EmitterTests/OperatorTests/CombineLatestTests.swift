@@ -8,7 +8,7 @@ final class CombineLatestTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -28,12 +28,12 @@ final class CombineLatestTests: XCTestCase {
 
     XCTAssertEqual(record.value.count, 0)
 
-    sourceA.emit(.value(1))
-    sourceA.emit(.value(2))
-    sourceB.emit(.value("a"))
-    sourceA.emit(.value(3))
-    sourceB.emit(.value("b"))
-    sourceB.emit(.value("c"))
+    sourceA.emit(value: 1)
+    sourceA.emit(value: 2)
+    sourceB.emit(value: "a")
+    sourceA.emit(value: 3)
+    sourceB.emit(value: "b")
+    sourceB.emit(value: "c")
 
     let intended = [
       Tuple.create(2, "a"),
@@ -67,12 +67,12 @@ final class CombineLatestTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(2))
-        sourceB.emit(.value("a"))
-        sourceA.emit(.value(3))
-        sourceB.emit(.value("b"))
-        sourceB.emit(.value("c"))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 2)
+        sourceB.emit(value: "a")
+        sourceA.emit(value: 3)
+        sourceB.emit(value: "b")
+        sourceB.emit(value: "c")
       })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)

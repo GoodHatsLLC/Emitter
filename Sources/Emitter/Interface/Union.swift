@@ -1,6 +1,6 @@
 // MARK: - UnionType
 
-public enum UnionType {}
+public enum UnionType { }
 
 // MARK: implementation
 extension UnionType {

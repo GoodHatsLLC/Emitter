@@ -8,7 +8,7 @@ final class RemoveDuplicatesTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -30,7 +30,7 @@ final class RemoveDuplicatesTests: XCTestCase {
     let entries: [String] = ["a", "a", "d", "e", "e"]
 
     for entry in entries {
-      source.emit(.value(entry))
+      source.emit(value: entry)
     }
 
     XCTAssertEqual(["a", "d", "e"], record.value)
@@ -52,12 +52,12 @@ final class RemoveDuplicatesTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(2))
-        sourceA.emit(.value(2))
-        sourceA.emit(.value(3))
-        sourceA.emit(.value(3))
-        sourceA.emit(.value(1))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 2)
+        sourceA.emit(value: 2)
+        sourceA.emit(value: 3)
+        sourceA.emit(value: 3)
+        sourceA.emit(value: 1)
       })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()

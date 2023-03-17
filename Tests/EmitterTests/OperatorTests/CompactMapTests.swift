@@ -8,7 +8,7 @@ final class CompactMapTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -30,7 +30,7 @@ final class CompactMapTests: XCTestCase {
     let entries: [String?] = [nil, "a", nil, nil, "d", "e"]
 
     for entry in entries {
-      source.emit(.value(entry))
+      source.emit(value: entry)
     }
 
     XCTAssertEqual(["a", "d", "e"], record.value)
@@ -52,11 +52,11 @@ final class CompactMapTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(nil))
-        sourceA.emit(.value(2))
-        sourceA.emit(.value(nil))
-        sourceA.emit(.value(3))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: nil)
+        sourceA.emit(value: 2)
+        sourceA.emit(value: nil)
+        sourceA.emit(value: 3)
       })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()

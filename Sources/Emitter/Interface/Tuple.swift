@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Tuple
 
-public enum Tuple {}
+public enum Tuple { }
 
 // MARK: Creation
 extension Tuple {

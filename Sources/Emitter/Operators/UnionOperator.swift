@@ -1,22 +1,24 @@
 import Disposable
 
-extension Emitter {
-  public func union<Other: Emitter>(
+extension Emitting {
+  public func union<Other: Emitting>(
     _ other: Other
-  ) -> some Emitter<UnionType.Of2<Output, Other.Output>>
+  ) -> some Emitting<UnionType.Of2<Output, Other.Output>>
     where Other.Output: UnionType.Unionable, Output: UnionType.Unionable
   {
-    Emitters.Union(upstreamA: self, upstreamB: other)
+    Emitter.Union(upstreamA: self, upstreamB: other)
   }
 }
 
-// MARK: - Emitters.Union
+// MARK: - Emitter.Union
 
-extension Emitters {
+extension Emitter {
 
-  public struct Union<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
+  public struct Union<UpstreamA: Emitting, UpstreamB: Emitting>: Emitting
     where UpstreamA.Output: UnionType.Unionable, UpstreamB.Output: UnionType.Unionable
   {
+
+    // MARK: Lifecycle
 
     public init(
       upstreamA: UpstreamA,
@@ -25,6 +27,8 @@ extension Emitters {
       self.upstreamA = upstreamA
       self.upstreamB = upstreamB
     }
+
+    // MARK: Public
 
     public typealias Output = UnionType.Of2<UpstreamA.Output, UpstreamB.Output>
 
@@ -44,13 +48,19 @@ extension Emitters {
         )
     }
 
+    // MARK: Private
+
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output
     {
 
+      // MARK: Lifecycle
+
       fileprivate init(downstream: Downstream) {
         self.downstream = downstream
       }
+
+      // MARK: Fileprivate
 
       fileprivate let downstream: Downstream
 
@@ -87,19 +97,23 @@ extension Emitters {
 
         switch emission {
         case .value: break
-        case .finished,
-             .failed:
+        case .failed,
+             .finished:
           if let disposable {
             disposable.dispose()
           }
         }
       }
 
+      // MARK: Private
+
       private var disposable: AnyDisposable?
 
     }
 
-    private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber where Downstream.Value == Output {
+    private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber
+      where Downstream.Value == Output
+    {
 
       fileprivate init(
         downstream: Downstream,

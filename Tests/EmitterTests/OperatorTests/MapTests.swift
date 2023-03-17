@@ -8,7 +8,7 @@ final class MapTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -30,10 +30,13 @@ final class MapTests: XCTestCase {
     let entries: [String] = ["a", "b", "c", "d", "e"]
 
     for entry in entries {
-      source.emit(.value(entry))
+      source.emit(value: entry)
     }
 
-    XCTAssertEqual(["a-and-stuff", "b-and-stuff", "c-and-stuff", "d-and-stuff", "e-and-stuff"], record.value)
+    XCTAssertEqual(
+      ["a-and-stuff", "b-and-stuff", "c-and-stuff", "d-and-stuff", "e-and-stuff"],
+      record.value
+    )
   }
 
   func test_dispose_releasesResources() throws {
@@ -52,11 +55,11 @@ final class MapTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(2))
-        sourceA.emit(.value(3))
-        sourceA.emit(.value(4))
-        sourceA.emit(.value(5))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 2)
+        sourceA.emit(value: 3)
+        sourceA.emit(value: 4)
+        sourceA.emit(value: 5)
       })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()

@@ -8,7 +8,7 @@ final class FilterTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -30,7 +30,7 @@ final class FilterTests: XCTestCase {
     let entries: [String] = ["INVALID", "a", "INVALID", "INVALID", "d", "e"]
 
     for entry in entries {
-      source.emit(.value(entry))
+      source.emit(value: entry)
     }
 
     XCTAssertEqual(["a", "d", "e"], record)
@@ -52,11 +52,11 @@ final class FilterTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(99))
-        sourceA.emit(.value(2))
-        sourceA.emit(.value(99))
-        sourceA.emit(.value(3))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 99)
+        sourceA.emit(value: 2)
+        sourceA.emit(value: 99)
+        sourceA.emit(value: 3)
       })()
       XCTAssertNotNil(weakSourceA)
       stage.dispose()

@@ -1,21 +1,23 @@
 import Disposable
 
-extension Emitter {
-  public func merge<Other: Emitter>(
+extension Emitting {
+  public func merge<Other: Emitting>(
     _ other: Other
-  ) -> some Emitter<Output> where Other.Output == Output {
-    Emitters.Merge(upstreamA: self, upstreamB: other)
+  ) -> some Emitting<Output> where Other.Output == Output {
+    Emitter.Merge(upstreamA: self, upstreamB: other)
   }
 }
 
-// MARK: - Emitters.Merge
+// MARK: - Emitter.Merge
 
-extension Emitters {
+extension Emitter {
   // MARK: - Merge
 
-  public struct Merge<UpstreamA: Emitter, UpstreamB: Emitter, Output: Sendable>: Emitter
+  public struct Merge<UpstreamA: Emitting, UpstreamB: Emitting, Output: Sendable>: Emitting
     where UpstreamA.Output == Output, UpstreamB.Output == Output
   {
+
+    // MARK: Lifecycle
 
     public init(
       upstreamA: UpstreamA,
@@ -24,6 +26,8 @@ extension Emitters {
       self.upstreamA = upstreamA
       self.upstreamB = upstreamB
     }
+
+    // MARK: Public
 
     public let upstreamA: UpstreamA
     public let upstreamB: UpstreamB
@@ -41,19 +45,25 @@ extension Emitters {
         )
     }
 
+    // MARK: Private
+
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output
     {
+
+      // MARK: Lifecycle
 
       fileprivate init(downstream: Downstream) {
         self.downstream = downstream
       }
 
+      // MARK: Fileprivate
+
       fileprivate let downstream: Downstream
 
       fileprivate func subscribe(
-        upstreamA: some Emitter<Output>,
-        upstreamB: some Emitter<Output>
+        upstreamA: some Emitting<Output>,
+        upstreamB: some Emitting<Output>
       )
         -> AnyDisposable
       {
@@ -72,13 +82,15 @@ extension Emitters {
 
         switch emission {
         case .value: break
-        case .finished,
-             .failed:
+        case .failed,
+             .finished:
           if let disposable {
             disposable.dispose()
           }
         }
       }
+
+      // MARK: Private
 
       private var disposable: AnyDisposable?
 

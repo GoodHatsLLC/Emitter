@@ -2,10 +2,10 @@ import Disposable
 
 // MARK: - AnyEmitter
 
-public struct AnyEmitter<Output: Sendable>: Emitter {
+public struct AnyEmitter<Output: Sendable>: Emitting {
 
-  fileprivate init(_ emitter: some Emitter<Output>) {
-    subscribeFunc = { emitter.subscribe($0) }
+  fileprivate init(_ emitter: some Emitting<Output>) {
+    self.subscribeFunc = { emitter.subscribe($0) }
   }
 
   private let subscribeFunc: @Sendable (any Subscriber<Output>)
@@ -24,10 +24,10 @@ extension AnyEmitter {
   public func erase() -> AnyEmitter<Output> { self }
 }
 
-extension Emitter {
+extension Emitting {
   public func erase() -> AnyEmitter<Output> {
     AnyEmitter(self)
   }
 
-  public func any() -> any Emitter<Output> { self }
+  public func any() -> any Emitting<Output> { self }
 }

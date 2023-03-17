@@ -1,20 +1,26 @@
 import Disposable
 
-extension Emitter {
-  public func combineLatest<Other: Emitter>(
+extension Emitting {
+  public func combineLatest<Other: Emitting>(
     _ other: Other
-  ) -> some Emitter<Tuple.Size2<Output, Other.Output>> {
-    Emitters.CombineLatest(upstreamA: self, upstreamB: other)
+  ) -> some Emitting<Tuple.Size2<Output, Other.Output>> {
+    Emitter.CombineLatest(upstreamA: self, upstreamB: other)
   }
 }
 
-// MARK: - Emitters.CombineLatest
+// MARK: - Emitter.CombineLatest
 
-extension Emitters {
+extension Emitter {
 
-  public struct CombineLatest<UpstreamA: Emitter & Sendable, UpstreamB: Emitter & Sendable>: Emitter, Sendable
+  public struct CombineLatest<
+    UpstreamA: Emitting & Sendable,
+    UpstreamB: Emitting & Sendable
+  >: Emitting,
+    Sendable
     where UpstreamA.Output: Sendable, UpstreamB.Output: Sendable
   {
+
+    // MARK: Lifecycle
 
     public init(
       upstreamA: UpstreamA,
@@ -23,6 +29,8 @@ extension Emitters {
       self.upstreamA = upstreamA
       self.upstreamB = upstreamB
     }
+
+    // MARK: Public
 
     public typealias OutputA = UpstreamA.Output
     public typealias OutputB = UpstreamB.Output
@@ -45,6 +53,8 @@ extension Emitters {
         .erase()
     }
 
+    // MARK: Private
+
     private enum JoinSubInput {
       case a(OutputA)
       case b(OutputB)
@@ -54,9 +64,13 @@ extension Emitters {
       where Downstream.Value == Output
     {
 
+      // MARK: Lifecycle
+
       public init(downstream: Downstream) {
         self.downstream = downstream
       }
+
+      // MARK: Public
 
       public func receive(emission: Emission<JoinSubInput>) {
         switch emission {
@@ -80,6 +94,8 @@ extension Emitters {
         }
       }
 
+      // MARK: Private
+
       private let downstream: Downstream
 
       private var lastA: OutputA?
@@ -87,7 +103,9 @@ extension Emitters {
 
     }
 
-    private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber where Downstream.Value == JoinSubInput {
+    private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber
+      where Downstream.Value == JoinSubInput
+    {
 
       fileprivate init(
         downstream: Downstream,

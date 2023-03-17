@@ -40,7 +40,7 @@ final class FinishTests: XCTestCase {
     let entries = ["a", "b", "c", "d", "e"]
 
     for entry in entries {
-      source.emit(.value(entry))
+      source.emit(value: entry)
     }
 
     XCTAssertFalse(didComplete)
@@ -70,9 +70,9 @@ final class FinishTests: XCTestCase {
 
     for entry in entries {
       if entry == "c" {
-        source.emit(.failed(Failure.sourceFail))
+        source.fail(Failure.sourceFail)
       } else {
-        source.emit(.value(entry))
+        source.emit(value: entry)
       }
     }
 
@@ -103,9 +103,9 @@ final class FinishTests: XCTestCase {
 
     for entry in entries {
       if entry == "c" {
-        source.emit(.finished)
+        source.finish()
       } else {
-        source.emit(.value(entry))
+        source.emit(value: entry)
       }
     }
 

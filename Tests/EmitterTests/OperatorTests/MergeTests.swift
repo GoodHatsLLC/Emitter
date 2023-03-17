@@ -8,7 +8,7 @@ final class MergeTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -28,12 +28,12 @@ final class MergeTests: XCTestCase {
 
     XCTAssertEqual(record.count, 0)
 
-    sourceA.emit(.value(1))
-    sourceB.emit(.value(-1))
-    sourceA.emit(.value(2))
-    sourceB.emit(.value(-2))
-    sourceA.emit(.value(3))
-    sourceB.emit(.value(-3))
+    sourceA.emit(value: 1)
+    sourceB.emit(value: -1)
+    sourceA.emit(value: 2)
+    sourceB.emit(value: -2)
+    sourceA.emit(value: 3)
+    sourceB.emit(value: -3)
 
     XCTAssertEqual([1, -1, 2, -2, 3, -3], record)
   }
@@ -58,12 +58,12 @@ final class MergeTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(2))
-        sourceB.emit(.value("a"))
-        sourceA.emit(.value(3))
-        sourceB.emit(.value("b"))
-        sourceB.emit(.value("c"))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 2)
+        sourceB.emit(value: "a")
+        sourceA.emit(value: 3)
+        sourceB.emit(value: "b")
+        sourceB.emit(value: "c")
       })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)

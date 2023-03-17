@@ -1,27 +1,25 @@
 #if canImport(Combine)
 import Combine
 
-extension Emitter {
-  public var combinePublisher: some Publisher<Output, Error> {
-    CombineBridge(upstream: self)
-  }
-
-  public var combineDriver: some Publisher<Output, Never> {
-    CombineBridge(upstream: self)
-      .map { Optional($0) }
-      .replaceError(with: nil)
-      .compactMap { $0 }
+extension Emitting {
+  public func asCombinePublisher() -> some Publisher<Output, Error> {
+    EmitterToCombineBridge(upstream: self)
   }
 }
 
-// MARK: - CombineBridge
+// MARK: - EmitterCombineBridge
 
-public struct CombineBridge<Upstream: Emitter>: Combine.Publisher {
+public struct EmitterToCombineBridge<Upstream: Emitting>: Combine.Publisher {
+
+  // MARK: Lifecycle
+
   public init(
     upstream: Upstream
   ) {
     self.upstream = upstream
   }
+
+  // MARK: Public
 
   public typealias Value = Upstream.Output
 
@@ -30,16 +28,20 @@ public struct CombineBridge<Upstream: Emitter>: Combine.Publisher {
 
   public let upstream: Upstream
 
-  public func receive<S>(subscriber: S) where S: Combine.Subscriber, Failure == S.Failure, Upstream.Output == S.Input {
+  public func receive<S>(subscriber: S) where S: Combine.Subscriber, Failure == S.Failure,
+    Upstream.Output == S.Input
+  {
     let subscriber = Sub(downstream: subscriber)
     let disposable = upstream.subscribe(subscriber)
     subscriber.receive(subscription: disposable)
   }
 
+  // MARK: Internal
+
   struct Subscription: Combine.Subscription {
     let disposable: AnyDisposable
     let combineIdentifier = CombineIdentifier()
-    func request(_: Subscribers.Demand) {}
+    func request(_: Subscribers.Demand) { }
     func cancel() {
       disposable.dispose()
     }

@@ -11,15 +11,15 @@ public enum PrintTypes: Hashable, CaseIterable, Sendable {
   case error
 }
 
-extension Emitter {
+extension Emitting {
   public func print(
     _ identifier: String = "🖨️",
     _ types: Set<PrintTypes> = Set(PrintTypes.allCases),
     _ file: String = #fileID,
     _ line: Int = #line,
     _ column: Int = #column
-  ) -> some Emitter<Output> {
-    Emitters.Print(
+  ) -> some Emitting<Output> {
+    Emitter.Print(
       upstream: self,
       identifier: identifier,
       types: types,
@@ -32,14 +32,16 @@ extension Emitter {
   }
 }
 
-// MARK: - Emitters.Print
+// MARK: - Emitter.Print
 
-extension Emitters {
+extension Emitter {
   // MARK: - Print
 
-  public struct Print<Upstream: Emitter, Output: Sendable>: Emitter
+  public struct Print<Upstream: Emitting, Output: Sendable>: Emitting
     where Upstream.Output == Output
   {
+
+    // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
@@ -59,6 +61,8 @@ extension Emitters {
         )
       }
     }
+
+    // MARK: Public
 
     public let upstream: Upstream
 
@@ -94,9 +98,13 @@ extension Emitters {
       }
     }
 
+    // MARK: Private
+
     private struct Sub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output
     {
+
+      // MARK: Lifecycle
 
       fileprivate init(
         downstream: Downstream,
@@ -109,6 +117,8 @@ extension Emitters {
         self.types = types
         self.codeLoc = codeLoc
       }
+
+      // MARK: Fileprivate
 
       fileprivate func receive(emission: Emission<Output>) {
         let newEmission: Emission<Output>
@@ -143,6 +153,8 @@ extension Emitters {
         }
         downstream.receive(emission: newEmission)
       }
+
+      // MARK: Private
 
       private let downstream: Downstream
       private let identifier: String

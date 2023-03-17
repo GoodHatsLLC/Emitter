@@ -1,21 +1,23 @@
 import Disposable
 
-extension Emitter {
+extension Emitting {
   public func filter(
     _ evaluator: @escaping @Sendable (Output) -> Bool
-  ) -> some Emitter<Output> {
-    Emitters.Filter(upstream: self, evaluator: evaluator)
+  ) -> some Emitting<Output> {
+    Emitter.Filter(upstream: self, evaluator: evaluator)
   }
 }
 
-// MARK: - Emitters.Filter
+// MARK: - Emitter.Filter
 
-extension Emitters {
+extension Emitter {
   // MARK: - Filter
 
-  public struct Filter<Upstream: Emitter & Sendable, Output: Sendable>: Emitter, Sendable
+  public struct Filter<Upstream: Emitting & Sendable, Output: Sendable>: Emitting, Sendable
     where Upstream.Output == Output
   {
+
+    // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
@@ -24,6 +26,8 @@ extension Emitters {
       self.evaluator = evaluator
       self.upstream = upstream
     }
+
+    // MARK: Public
 
     public let evaluator: @Sendable (Output) -> Bool
     public let upstream: Upstream
@@ -34,6 +38,8 @@ extension Emitters {
     {
       upstream.subscribe(Sub<S>(downstream: subscriber, evaluator: evaluator))
     }
+
+    // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output

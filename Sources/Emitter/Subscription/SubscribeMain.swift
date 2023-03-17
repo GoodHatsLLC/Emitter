@@ -1,11 +1,11 @@
 import Disposable
 import Foundation
 
-extension Emitter {
+extension Emitting {
 
-  public func subscribeMain(
+  public nonisolated func subscribeMain(
     value: @escaping @MainActor (_ value: Output) -> Void,
-    finished: @escaping @MainActor () -> Void = {},
+    finished: @escaping @MainActor () -> Void = { },
     failed: @escaping @MainActor (_ error: Error) -> Void = { _ in }
   )
     -> AnyDisposable
@@ -29,9 +29,9 @@ private struct SubscribeMain<Value>: Subscriber {
     finished: (@MainActor () -> Void)?,
     failed: (@MainActor (Error) -> Void)?
   ) {
-    valueFunc = value
-    finishedFunc = finished
-    failedFunc = failed
+    self.valueFunc = value
+    self.finishedFunc = finished
+    self.failedFunc = failed
   }
 
   fileprivate func receive(emission: Emission<Value>) {

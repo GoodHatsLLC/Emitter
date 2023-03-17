@@ -1,27 +1,30 @@
 import Disposable
-import Disposable
 
 // MARK: - Subscription
 
 final class Subscription<Value: Sendable>: Sendable, Disposable, Hashable {
 
+  // MARK: Lifecycle
+
   init<HeadSubscriber: Subscriber>(
     subscriber: HeadSubscriber
   ) where Value == HeadSubscriber.Value {
-    subscriberReceiver = { emission in subscriber.receive(emission: emission) }
-    onDispose = { subscriber.receive(emission: .finished) }
+    self.subscriberReceiver = { emission in subscriber.receive(emission: emission) }
+    self.onDispose = { subscriber.receive(emission: .finished) }
   }
 
   init<HeadSubscriber: Subscriber>(
     subscriber: HeadSubscriber,
     onDispose: @escaping @Sendable () -> Void
   ) where Value == HeadSubscriber.Value {
-    subscriberReceiver = { emission in subscriber.receive(emission: emission) }
+    self.subscriberReceiver = { emission in subscriber.receive(emission: emission) }
     self.onDispose = {
       subscriber.receive(emission: .finished)
       onDispose()
     }
   }
+
+  // MARK: Internal
 
   func dispose() {
     // TODO: Notify source?
@@ -30,6 +33,8 @@ final class Subscription<Value: Sendable>: Sendable, Disposable, Hashable {
   func receive(emission: Emission<Value>) {
     subscriberReceiver(emission)
   }
+
+  // MARK: Private
 
   private let onDispose: @Sendable () -> Void
   private let subscriberReceiver: @Sendable (Emission<Value>) -> Void

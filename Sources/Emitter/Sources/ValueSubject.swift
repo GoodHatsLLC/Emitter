@@ -3,13 +3,17 @@ import Foundation
 
 // MARK: - ValueSubject
 
-public final class ValueSubject<Value: Sendable>: Emitter, Subject, @unchecked
+public final class ValueSubject<Value: Sendable>: Emitting, Subject, @unchecked
 Sendable {
 
+  // MARK: Lifecycle
+
   public init(_ value: Value) {
-    isActive = true
-    _value = value
+    self.isActive = true
+    self._value = value
   }
+
+  // MARK: Public
 
   public typealias Output = Value
 
@@ -24,6 +28,8 @@ Sendable {
     }
   }
 
+  // MARK: Private
+
   private let lock = NSLock()
   private var isActive: Bool
   private var _value: Value
@@ -33,7 +39,23 @@ Sendable {
 // MARK: - Source API
 extension ValueSubject {
 
-  public func emit(_ emission: Emission<Value>) {
+  // MARK: Public
+
+  public func finish() {
+    emit(.finished)
+  }
+
+  public func emit(value: Value) {
+    emit(.value(value))
+  }
+
+  public func fail(_ error: some Error) {
+    emit(.failed(error))
+  }
+
+  // MARK: Private
+
+  private func emit(_ emission: Emission<Value>) {
     let subs = lock.withLock {
       stateEffects(emission)
     }
@@ -45,8 +67,8 @@ extension ValueSubject {
   private func stateEffects(_ emission: Emission<Value>) -> Set<Subscription<Value>> {
     let subs = subscriptions
     switch emission {
-    case .finished,
-         .failed:
+    case .failed,
+         .finished:
       isActive = false
       subscriptions.removeAll()
     case .value(let value):

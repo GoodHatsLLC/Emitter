@@ -8,7 +8,7 @@ final class FlatMapLatestTests: XCTestCase {
 
   let stage = DisposableStage()
 
-  override func setUp() {}
+  override func setUp() { }
 
   override func tearDown() {
     stage.reset()
@@ -17,9 +17,9 @@ final class FlatMapLatestTests: XCTestCase {
   func testStream_flatMapLatest() throws {
     var record: [String] = []
     let sourceA: PublishSubject<Int> = .init()
-    let sourceZ: PublishSubject<()> = .init()
+    let sourceZ: PublishSubject<Void> = .init()
     @Sendable
-    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
+    func sourceBFunc(input: Int, count _: Int) -> some Emitting<String> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
     }
@@ -37,8 +37,8 @@ final class FlatMapLatestTests: XCTestCase {
 
     let entriesA: [Int] = [1, 2, 3]
     for entry in entriesA {
-      sourceA.emit(.value(entry))
-      sourceZ.emit(.value(()))
+      sourceA.emit(value: entry)
+      sourceZ.emit(value: ())
     }
 
     XCTAssertEqual(["11", "22", "33"], record)
@@ -47,9 +47,9 @@ final class FlatMapLatestTests: XCTestCase {
   func testStream_flatMapLatest_value() throws {
     var record: [String] = []
     let sourceA: ValueSubject<Int> = .init(0)
-    let sourceZ: ValueSubject<()> = .init(())
+    let sourceZ: ValueSubject<Void> = .init(())
     @Sendable
-    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
+    func sourceBFunc(input: Int, count _: Int) -> some Emitting<String> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
     }
@@ -67,8 +67,8 @@ final class FlatMapLatestTests: XCTestCase {
 
     let entriesA: [Int] = [1, 2, 3]
     for entry in entriesA {
-      sourceA.emit(.value(entry))
-      sourceZ.emit(.value(()))
+      sourceA.emit(value: entry)
+      sourceZ.emit(value: ())
     }
 
     XCTAssertEqual(["00", "11", "11", "22", "22", "33", "33"], record)
@@ -97,13 +97,13 @@ final class FlatMapLatestTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(2))
-        sourceB.emit(.value("a"))
-        sourceB.emit(.value("b"))
-        sourceA.emit(.value(3))
-        sourceA.emit(.value(0))
-        sourceB.emit(.value("c"))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 2)
+        sourceB.emit(value: "a")
+        sourceB.emit(value: "b")
+        sourceA.emit(value: 3)
+        sourceA.emit(value: 0)
+        sourceB.emit(value: "c")
       })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
@@ -138,13 +138,13 @@ final class FlatMapLatestTests: XCTestCase {
           }
           .stage(on: stage)
 
-        sourceA.emit(.value(1))
-        sourceA.emit(.value(2))
-        sourceB.emit(.value("a"))
-        sourceB.emit(.value("b"))
-        sourceA.emit(.value(3))
-        sourceA.emit(.value(0))
-        sourceB.emit(.value("c"))
+        sourceA.emit(value: 1)
+        sourceA.emit(value: 2)
+        sourceB.emit(value: "a")
+        sourceB.emit(value: "b")
+        sourceA.emit(value: 3)
+        sourceA.emit(value: 0)
+        sourceB.emit(value: "c")
       })()
       XCTAssertNotNil(weakSourceA)
       XCTAssertNotNil(weakSourceB)
@@ -167,7 +167,7 @@ extension FlatMapLatestTests {
     var cancellables = Set<AnyCancellable>()
     var record: [String] = []
     let sourceA: PassthroughSubject<Int, Never> = .init()
-    let sourceZ: PassthroughSubject<(), Never> = .init()
+    let sourceZ: PassthroughSubject<Void, Never> = .init()
     func sourceBFunc(input: Int, count _: Int) -> some Publisher<String, Never> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
@@ -198,7 +198,7 @@ extension FlatMapLatestTests {
     var cancellables = Set<AnyCancellable>()
     var record: [String] = []
     let sourceA: CurrentValueSubject<Int, Never> = .init(0)
-    let sourceZ: CurrentValueSubject<(), Never> = .init(())
+    let sourceZ: CurrentValueSubject<Void, Never> = .init(())
     func sourceBFunc(input: Int, count _: Int) -> some Publisher<String, Never> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }

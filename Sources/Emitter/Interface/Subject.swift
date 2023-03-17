@@ -1,4 +1,6 @@
 public protocol Subject {
   associatedtype Input: Sendable
-  nonisolated func emit(_ emission: Emission<Input>)
+  nonisolated func fail(_ error: some Error)
+  nonisolated func emit(value: Input)
+  nonisolated func finish()
 }

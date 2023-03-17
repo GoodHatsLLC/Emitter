@@ -1,27 +1,31 @@
 import Disposable
 
-extension Emitter {
+extension Emitting {
   public func flatMapLatest<NewOutput: Sendable>(
-    producer: @escaping @Sendable (Output) -> some Emitter<NewOutput>
-  ) -> some Emitter<NewOutput> {
-    Emitters.FlatMapLatest(upstream: self, producer: producer)
+    producer: @escaping @Sendable (Output) -> some Emitting<NewOutput>
+  ) -> some Emitting<NewOutput> {
+    Emitter.FlatMapLatest(upstream: self, producer: producer)
   }
 }
 
-// MARK: - Emitters.FlatMapLatest
+// MARK: - Emitter.FlatMapLatest
 
-extension Emitters {
+extension Emitter {
   // MARK: - FlatMapLatest
 
-  public struct FlatMapLatest<Upstream: Emitter, Output: Sendable>: Emitter {
+  public struct FlatMapLatest<Upstream: Emitting, Output: Sendable>: Emitting {
+
+    // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
-      producer: @escaping @Sendable (Upstream.Output) -> some Emitter<Output>
+      producer: @escaping @Sendable (Upstream.Output) -> some Emitting<Output>
     ) where Upstream.Output == Upstream.Output {
       self.producer = { producer($0).erase() }
       self.upstream = upstream
     }
+
+    // MARK: Public
 
     public let producer: @Sendable (Upstream.Output) -> AnyEmitter<Output>
     public let upstream: Upstream
@@ -39,9 +43,13 @@ extension Emitters {
       )
     }
 
+    // MARK: Private
+
     private final class Sub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output
     {
+
+      // MARK: Lifecycle
 
       fileprivate init(
         downstream: Downstream,
@@ -52,6 +60,8 @@ extension Emitters {
         self.producer = producer
         self.upstream = upstream
       }
+
+      // MARK: Fileprivate
 
       fileprivate func receive(emission: Emission<Upstream.Output>) {
         switch emission {
@@ -67,6 +77,8 @@ extension Emitters {
           downstream.receive(emission: .failed(error))
         }
       }
+
+      // MARK: Private
 
       private struct InnerSub<Downstream: Subscriber>: Subscriber
         where Downstream.Value == Output

@@ -1,19 +1,21 @@
 import Disposable
 
-extension Emitter {
+extension Emitting {
   public func compactMap<NewOutput: Sendable>(
     transformer: @escaping @Sendable (Output) -> NewOutput?
-  ) -> some Emitter<NewOutput> {
-    Emitters.CompactMap<Self, NewOutput>(upstream: self, transformer: transformer)
+  ) -> some Emitting<NewOutput> {
+    Emitter.CompactMap<Self, NewOutput>(upstream: self, transformer: transformer)
   }
 }
 
-// MARK: - Emitters.CompactMap
+// MARK: - Emitter.CompactMap
 
-extension Emitters {
+extension Emitter {
   // MARK: - CompactMap
 
-  public struct CompactMap<Upstream: Emitter, Output: Sendable>: Emitter {
+  public struct CompactMap<Upstream: Emitting, Output: Sendable>: Emitting {
+
+    // MARK: Lifecycle
 
     init(
       upstream: Upstream,
@@ -22,6 +24,8 @@ extension Emitters {
       self.transformer = transformer
       self.upstream = upstream
     }
+
+    // MARK: Public
 
     public let transformer: @Sendable (Upstream.Output) -> Output?
     public let upstream: Upstream
@@ -33,10 +37,15 @@ extension Emitters {
       upstream.subscribe(Sub<S>(downstream: subscriber, transformer: transformer))
     }
 
+    // MARK: Private
+
     private struct Sub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output
     {
-      fileprivate init(downstream: Downstream, transformer: @escaping (Upstream.Output) -> Output?) {
+      fileprivate init(
+        downstream: Downstream,
+        transformer: @escaping (Upstream.Output) -> Output?
+      ) {
         self.downstream = downstream
         self.transformer = transformer
       }

@@ -16,7 +16,7 @@ final class CreateTests: XCTestCase {
     let entries = ["a", "b", "c", "d", "e"]
     var record: [String] = []
 
-    let createSource = Emitters.create(String.self) { emit in
+    let createSource = Emitter.create(String.self) { emit in
       _ = await Task {
         for entry in entries {
           emit(.value(entry))
@@ -41,7 +41,7 @@ final class CreateTests: XCTestCase {
     let entries = ["a", "b", "c", "d", "e"]
     var didFinish = false
 
-    let createSource = Emitters.create(String.self) { emit in
+    let createSource = Emitter.create(String.self) { emit in
       _ = await Task {
         for entry in entries {
           emit(.value(entry))
@@ -71,7 +71,7 @@ final class CreateTests: XCTestCase {
     let entries = ["a", "b", "c", "d", "e"]
     var didFail = false
 
-    let createSource = Emitters.create(String.self) { emit in
+    let createSource = Emitter.create(String.self) { emit in
       _ = await Task {
         for entry in entries {
           emit(.value(entry))
@@ -103,7 +103,7 @@ final class CreateTests: XCTestCase {
     var record: [String] = []
     var didFinish = false
 
-    let createSource = Emitters.create(String.self) { emit in
+    let createSource = Emitter.create(String.self) { emit in
       _ = await Task { @MainActor in
         for entry in entries {
           emit(.value(entry))
@@ -137,4 +137,4 @@ final class CreateTests: XCTestCase {
 
 // MARK: - ExampleFailure
 
-private struct ExampleFailure: Error {}
+private struct ExampleFailure: Error { }

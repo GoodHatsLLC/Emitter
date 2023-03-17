@@ -2,9 +2,9 @@ import Disposable
 import Emitter
 import XCTest
 
-// MARK: - AsyncStreamTests
+// MARK: - EmitterToAsyncTests
 
-final class AsyncStreamTests: XCTestCase {
+final class EmitterToAsyncTests: XCTestCase {
 
   var source: PublishSubject<String> = .init()
   let stage = DisposableStage()
@@ -31,7 +31,7 @@ final class AsyncStreamTests: XCTestCase {
 
     _ = await Task { [source] in
       for entry in entries {
-        source.emit(.value(entry))
+        source.emit(value: entry)
       }
     }.result
 
@@ -57,10 +57,10 @@ final class AsyncStreamTests: XCTestCase {
 
     _ = await Task { [source] in
       for entry in entries {
-        source.emit(.value(entry))
+        source.emit(value: entry)
       }
       // source finishes
-      source.emit(.finished)
+      source.finish()
     }.result
 
     let record = try await handle.value
@@ -70,9 +70,9 @@ final class AsyncStreamTests: XCTestCase {
 
 }
 
-// MARK: AsyncStreamTests.Failure
+// MARK: EmitterToAsyncTests.Failure
 
-extension AsyncStreamTests {
+extension EmitterToAsyncTests {
   enum Failure: Error {
     case sourceFail
   }

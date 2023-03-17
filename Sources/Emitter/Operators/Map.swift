@@ -1,19 +1,21 @@
 import Disposable
 
-extension Emitter {
+extension Emitting {
   public func map<NewOutput: Sendable>(
     _ transformer: @escaping @Sendable (Output) -> NewOutput
-  ) -> some Emitter<NewOutput> {
-    Emitters.Map(upstream: self, transformer: transformer)
+  ) -> some Emitting<NewOutput> {
+    Emitter.Map(upstream: self, transformer: transformer)
   }
 }
 
-// MARK: - Emitters.Map
+// MARK: - Emitter.Map
 
-extension Emitters {
+extension Emitter {
   // MARK: - Map
 
-  public struct Map<Upstream: Emitter, Output: Sendable>: Emitter {
+  public struct Map<Upstream: Emitting, Output: Sendable>: Emitting {
+
+    // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
@@ -22,6 +24,8 @@ extension Emitters {
       self.transformer = transformer
       self.upstream = upstream
     }
+
+    // MARK: Public
 
     public let transformer: @Sendable (Upstream.Output) -> Output
     public let upstream: Upstream
@@ -36,6 +40,8 @@ extension Emitters {
         )
       )
     }
+
+    // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output

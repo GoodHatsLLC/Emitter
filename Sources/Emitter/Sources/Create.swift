@@ -1,27 +1,35 @@
 import Disposable
 import Foundation
 
-extension Emitters {
+extension Emitter {
   public static func create<Output: Sendable>(
     _: Output.Type,
-    _ creator: @escaping @Sendable (_ emit: @escaping @Sendable (Emission<Output>) -> Void) async -> Void
-  ) -> some Emitter<Output> {
-    Emitters.Create(with: creator)
+    _ creator: @escaping @Sendable (_ emit: @escaping @Sendable (Emission<Output>) -> Void) async
+      -> Void
+  ) -> some Emitting<Output> {
+    Emitter.Create(with: creator)
   }
 }
 
-// MARK: - Emitters.Create
+// MARK: - Emitter.Create
 
-extension Emitters {
+extension Emitter {
   // MARK: - Create
 
-  private final class Create<Output: Sendable>: Emitter, @unchecked Sendable {
+  private final class Create<Output: Sendable>: Emitting, @unchecked Sendable {
+
+    // MARK: Lifecycle
 
     fileprivate init(
-      with creator: @escaping @Sendable (_ source: @escaping @Sendable (Emission<Output>) -> Void) async -> Void
+      with creator: @escaping @Sendable (
+        _ source: @escaping @Sendable (Emission<Output>)
+          -> Void
+      ) async -> Void
     ) {
       self.creator = creator
     }
+
+    // MARK: Fileprivate
 
     fileprivate func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable
       where S.Value == Output
@@ -29,14 +37,15 @@ extension Emitters {
       let subscription = Subscription<Output>(
         subscriber: subscriber
       )
-      let didSubscribe = lock
-        .withLock {
+      let didSubscribe = subscriptions
+        .withLock { subscriptions in
           if disposable == nil {
+            subscriptions.insert(subscription)
             guard let started = start()
             else {
+              subscriptions.remove(subscription)
               return false
             }
-            subscriptions.insert(subscription)
             disposable = started
             return true
           } else {
@@ -47,13 +56,13 @@ extension Emitters {
       guard didSubscribe
       else {
         subscription.receive(emission: .finished)
-        return AnyDisposable {}
+        return AnyDisposable { }
       }
-      return AnyDisposable {
-        let (subscriptionDisposable, sourceDisposable) = self.lock.withLock {
-          let subscriptionDisposable = self.subscriptions.remove(subscription)
+      return AnyDisposable { [subscriptions] in
+        let (subscriptionDisposable, sourceDisposable) = subscriptions.withLock { subscriptions in
+          let subscriptionDisposable = subscriptions.remove(subscription)
           let sourceDisposable: AnyDisposable?
-          if self.subscriptions.isEmpty {
+          if subscriptions.isEmpty {
             sourceDisposable = self.disposable
             self.disposable = nil
           } else {
@@ -65,6 +74,8 @@ extension Emitters {
         sourceDisposable?.dispose()
       }
     }
+
+    // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
       where Downstream.Value == Output
@@ -83,15 +94,15 @@ extension Emitters {
       private let downstream: Downstream
     }
 
-    private let lock = NSLock()
-    private var creator: (@Sendable (_ source: @escaping @Sendable (Emission<Output>) -> Void) async -> Void)?
-    private var subscriptions: Set<Subscription<Output>> = []
+    private var creator: (@Sendable (
+      _ source: @escaping @Sendable (Emission<Output>)
+        -> Void
+    ) async -> Void)?
+    private var subscriptions = Locked<Set<Subscription<Output>>>([])
     private var disposable: AnyDisposable?
 
-    private func emitDownstream(_ emission: Emission<Output>) {
-      let subs = lock.withLock {
-        subscriptions
-      }
+    private func downstreamEmit(_ emission: Emission<Output>) {
+      let subs = subscriptions.withLock { $0 }
       for sub in subs {
         sub.receive(emission: emission)
       }
@@ -103,9 +114,10 @@ extension Emitters {
         assertionFailure()
         return nil
       }
-      return Task {
-        await creator { self.emitDownstream($0) }
-      }.erase()
+      let task = Task {
+        await creator { event in self.downstreamEmit(event) }
+      }
+      return AnyDisposable(task)
     }
 
   }

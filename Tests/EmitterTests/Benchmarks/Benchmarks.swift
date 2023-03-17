@@ -7,7 +7,7 @@ import XCTest
 // MARK: - Benchmarks
 
 final class Benchmarks: XCTestCase {
-  let input = Array(repeating: 123, count: 99_999)
+  let input = Array(repeating: 123, count: 99999)
 }
 
 // MARK: Map
@@ -25,7 +25,7 @@ extension Benchmarks {
         .stage(on: stage)
 
       for value in input {
-        sourceA.emit(.value(value))
+        sourceA.emit(value: value)
       }
     }
   }
@@ -70,7 +70,7 @@ extension Benchmarks {
         .stage(on: stage)
 
       for value in input {
-        sourceA.emit(.value(value))
+        sourceA.emit(value: value)
       }
     }
   }
@@ -119,7 +119,7 @@ extension Benchmarks {
         .stage(on: stage)
 
       for value in input {
-        sourceA.emit(.value(value))
+        sourceA.emit(value: value)
       }
     }
   }
@@ -166,7 +166,7 @@ extension Benchmarks {
         .stage(on: stage)
 
       for value in input {
-        sourceA.emit(.value(value))
+        sourceA.emit(value: value)
       }
     }
   }
@@ -209,7 +209,7 @@ extension Benchmarks {
         .stage(on: stage)
 
       for value in input {
-        sourceA.emit(.value(value))
+        sourceA.emit(value: value)
       }
     }
   }
@@ -252,7 +252,7 @@ extension Benchmarks {
 
       var last: Int?
       for value in input {
-        sourceA.emit(.value(last ?? value))
+        sourceA.emit(value: last ?? value)
         last = last == nil ? value : nil
       }
     }

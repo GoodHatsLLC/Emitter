@@ -1,15 +1,20 @@
 import Disposable
-
 import Foundation
 
 // MARK: - PublishSubject
 
-public final class PublishSubject<Value: Sendable>: Emitter, Subject, @unchecked
+public final class PublishSubject<Value: Sendable>: Emitting, Subject, @unchecked
 Sendable {
 
-  public init() {}
+  // MARK: Lifecycle
+
+  public init() { }
+
+  // MARK: Public
 
   public typealias Output = Value
+
+  // MARK: Private
 
   private let lock = NSLock()
   private var subscriptions: Set<Subscription<Value>> = []
@@ -18,11 +23,28 @@ Sendable {
 
 // MARK: - Source API
 extension PublishSubject {
-  public func emit(_ emission: Emission<Value>) {
+
+  // MARK: Public
+
+  public func finish() {
+    emit(.finished)
+  }
+
+  public func emit(value: Value) {
+    emit(.value(value))
+  }
+
+  public func fail(_ error: some Error) {
+    emit(.failed(error))
+  }
+
+  // MARK: Private
+
+  private func emit(_ emission: Emission<Value>) {
     let subs = subscriptions
     switch emission {
-    case .finished,
-         .failed:
+    case .failed,
+         .finished:
       isActive = false
       subscriptions.removeAll()
     case _:
