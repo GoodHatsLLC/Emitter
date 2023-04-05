@@ -10,7 +10,7 @@
 /// 1. `OSAllocatedUnfairLock`
 /// 2. `NSLock`
 /// 3. `pthread_mutex_t`
-public struct Locked<T> {
+struct Locked<T> {
 
   // MARK: Lifecycle
 
@@ -18,7 +18,7 @@ public struct Locked<T> {
   ///
   /// - Parameters:
   ///   - value: the instance to be protected by the lock.
-  public init(_ value: T) {
+  init(_ value: T) {
     self.underlying = Self.make(for: value)
   }
 
@@ -27,7 +27,7 @@ public struct Locked<T> {
   ///
   /// - Parameters:
   ///   - value: the instance to be protected by the lock.
-  public init() where T == Void {
+  init() where T == Void {
     self.underlying = Self.make(for: ())
   }
 
@@ -37,7 +37,7 @@ public struct Locked<T> {
   ///
   /// > Note: Use ``withLock(action:)-7qgic`` for atomic
   /// read-evaluate-write access to the underlying variable.
-  @inline(__always)  public var value: T {
+  @inline(__always)  var value: T {
     get {
       withLock { $0 }
     }
@@ -61,7 +61,7 @@ public struct Locked<T> {
   /// - Returns: The instance of `aT` created by the action.
   @inline(__always)
   @discardableResult
-  public func withLock<aT>(action: (inout T) throws -> aT) rethrows -> aT {
+  func withLock<aT>(action: (inout T) throws -> aT) rethrows -> aT {
     let lock = underlying
     lock.lock()
     defer { lock.unlock() }
@@ -83,7 +83,7 @@ extension Locked where T == Void {
   /// - Returns: The instance of `aT` created by the action.
   @inline(__always)
   @discardableResult
-  public func withLock<P>(action: () throws -> P) rethrows -> P {
+  func withLock<P>(action: () throws -> P) rethrows -> P {
     let lock = underlying
     lock.lock()
     defer { lock.unlock() }
@@ -94,13 +94,13 @@ extension Locked where T == Void {
   ///
   /// Prefer ``withLock(action:)-7ntrz``.
   @inline(__always)
-  public func lock() {
+  func lock() {
     underlying.lock()
   }
 
   /// Release exclusive access taken with ``lock()``
   @inline(__always)
-  public func unlock() {
+  func unlock() {
     underlying.unlock()
   }
 }
