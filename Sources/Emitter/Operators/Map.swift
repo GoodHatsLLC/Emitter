@@ -1,19 +1,19 @@
 import Disposable
 
-extension Emitting {
+extension Emitter {
   public func map<NewOutput: Sendable>(
     _ transformer: @escaping @Sendable (Output) -> NewOutput
-  ) -> some Emitting<NewOutput> {
-    Emitter.Map(upstream: self, transformer: transformer)
+  ) -> some Emitter<NewOutput> {
+    Emitters.Map(upstream: self, transformer: transformer)
   }
 }
 
-// MARK: - Emitter.Map
+// MARK: - Emitters.Map
 
-extension Emitter {
+extension Emitters {
   // MARK: - Map
 
-  public struct Map<Upstream: Emitting, Output: Sendable>: Emitting {
+  public struct Map<Upstream: Emitter, Output: Sendable>: Emitter {
 
     // MARK: Lifecycle
 
@@ -30,7 +30,7 @@ extension Emitter {
     public let transformer: @Sendable (Upstream.Output) -> Output
     public let upstream: Upstream
 
-    public func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable
+    public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
       where S.Value == Output
     {
       upstream.subscribe(

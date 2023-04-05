@@ -24,7 +24,7 @@ final class CombineToEmitterTests: XCTestCase {
   func testAsyncBridge_publishesAndFinishes() async throws {
     let entries = ["a", "b", "c", "d", "e"]
     var record: [String] = []
-    Emitter.bridge(entries.publisher)
+    Emitters.bridge(entries.publisher)
       .subscribe { value in
         record.append(value)
       } finished: {
@@ -40,7 +40,7 @@ final class CombineToEmitterTests: XCTestCase {
     let entries = Array(0 ..< 100)
     let subject = PassthroughSubject<Int, Never>()
     var record: [Int] = []
-    Emitter.bridge(subject)
+    Emitters.bridge(subject)
       .subscribe { value in
         record.append(value)
         if record.count == entries.count {
@@ -57,6 +57,7 @@ final class CombineToEmitterTests: XCTestCase {
     subject.send(completion: .finished)
 
     await block.value
+    await block2.value
     XCTAssertEqual(entries.sorted(), record.sorted())
   }
 

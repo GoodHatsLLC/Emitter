@@ -21,7 +21,7 @@ final class EmitterToCombineTests: XCTestCase {
     let entries = ["a", "b", "c", "d", "e"]
     var record: [String] = []
     var didFinish = false
-    Emitter
+    Emitters
       .bridge(entries)
       .asCombinePublisher()
       .sink { _ in

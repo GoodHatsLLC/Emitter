@@ -1,22 +1,22 @@
 import Disposable
 import Foundation
 
-extension Emitter {
+extension Emitters {
   public static func create<Output: Sendable>(
     _: Output.Type,
     _ creator: @escaping @Sendable (_ emit: @escaping @Sendable (Emission<Output>) -> Void) async
       -> Void
-  ) -> some Emitting<Output> {
-    Emitter.Create(with: creator)
+  ) -> some Emitter<Output> {
+    Emitters.Create(with: creator)
   }
 }
 
-// MARK: - Emitter.Create
+// MARK: - Emitters.Create
 
-extension Emitter {
+extension Emitters {
   // MARK: - Create
 
-  private final class Create<Output: Sendable>: Emitting, @unchecked Sendable {
+  private final class Create<Output: Sendable>: Emitter, @unchecked Sendable {
 
     // MARK: Lifecycle
 
@@ -31,7 +31,7 @@ extension Emitter {
 
     // MARK: Fileprivate
 
-    fileprivate func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable
+    fileprivate func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
       where S.Value == Output
     {
       let subscription = Subscription<Output>(
@@ -56,19 +56,19 @@ extension Emitter {
       guard didSubscribe
       else {
         subscription.receive(emission: .finished)
-        return AnyDisposable { }
+        return AutoDisposable { }
       }
-      return AnyDisposable { [subscriptions] in
+      return AutoDisposable { [subscriptions] in
         let (subscriptionDisposable, sourceDisposable) = subscriptions.withLock { subscriptions in
           let subscriptionDisposable = subscriptions.remove(subscription)
-          let sourceDisposable: AnyDisposable?
+          let sourceDisposable: AutoDisposable?
           if subscriptions.isEmpty {
             sourceDisposable = self.disposable
             self.disposable = nil
           } else {
             sourceDisposable = nil
           }
-          return (subscriptionDisposable?.erase(), sourceDisposable)
+          return (subscriptionDisposable?.auto(), sourceDisposable)
         }
         subscriptionDisposable?.dispose()
         sourceDisposable?.dispose()
@@ -99,7 +99,7 @@ extension Emitter {
         -> Void
     ) async -> Void)?
     private var subscriptions = Locked<Set<Subscription<Output>>>([])
-    private var disposable: AnyDisposable?
+    private var disposable: AutoDisposable?
 
     private func downstreamEmit(_ emission: Emission<Output>) {
       let subs = subscriptions.withLock { $0 }
@@ -108,7 +108,7 @@ extension Emitter {
       }
     }
 
-    private func start() -> AnyDisposable? {
+    private func start() -> AutoDisposable? {
       guard let creator
       else {
         assertionFailure()
@@ -117,7 +117,7 @@ extension Emitter {
       let task = Task {
         await creator { event in self.downstreamEmit(event) }
       }
-      return AnyDisposable(task)
+      return AutoDisposable { task.cancel() }
     }
 
   }

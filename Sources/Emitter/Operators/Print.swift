@@ -11,15 +11,15 @@ public enum PrintTypes: Hashable, CaseIterable, Sendable {
   case error
 }
 
-extension Emitting {
+extension Emitter {
   public func print(
     _ identifier: String = "🖨️",
     _ types: Set<PrintTypes> = Set(PrintTypes.allCases),
     _ file: String = #fileID,
     _ line: Int = #line,
     _ column: Int = #column
-  ) -> some Emitting<Output> {
-    Emitter.Print(
+  ) -> some Emitter<Output> {
+    Emitters.Print(
       upstream: self,
       identifier: identifier,
       types: types,
@@ -32,12 +32,12 @@ extension Emitting {
   }
 }
 
-// MARK: - Emitter.Print
+// MARK: - Emitters.Print
 
-extension Emitter {
+extension Emitters {
   // MARK: - Print
 
-  public struct Print<Upstream: Emitting, Output: Sendable>: Emitting
+  public struct Print<Upstream: Emitter, Output: Sendable>: Emitter
     where Upstream.Output == Output
   {
 
@@ -67,7 +67,7 @@ extension Emitter {
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AnyDisposable
+      -> AutoDisposable
       where S.Value == Output
     {
       if types.contains(.subscribe) {
@@ -86,7 +86,7 @@ extension Emitter {
             codeLoc: codeLoc
           )
         )
-      return AnyDisposable {
+      return AutoDisposable {
         disposable.dispose()
         if types.contains(.dispose) {
           Swift.print(

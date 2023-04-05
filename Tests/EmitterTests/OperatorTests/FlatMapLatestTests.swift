@@ -19,7 +19,7 @@ final class FlatMapLatestTests: XCTestCase {
     let sourceA: PublishSubject<Int> = .init()
     let sourceZ: PublishSubject<Void> = .init()
     @Sendable
-    func sourceBFunc(input: Int, count _: Int) -> some Emitting<String> {
+    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
     }
@@ -49,7 +49,7 @@ final class FlatMapLatestTests: XCTestCase {
     let sourceA: ValueSubject<Int> = .init(0)
     let sourceZ: ValueSubject<Void> = .init(())
     @Sendable
-    func sourceBFunc(input: Int, count _: Int) -> some Emitting<String> {
+    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
     }

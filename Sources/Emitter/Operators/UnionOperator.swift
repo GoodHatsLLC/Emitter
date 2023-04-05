@@ -1,20 +1,20 @@
 import Disposable
 
-extension Emitting {
-  public func union<Other: Emitting>(
+extension Emitter {
+  public func union<Other: Emitter>(
     _ other: Other
-  ) -> some Emitting<UnionType.Of2<Output, Other.Output>>
+  ) -> some Emitter<UnionType.Of2<Output, Other.Output>>
     where Other.Output: UnionType.Unionable, Output: UnionType.Unionable
   {
-    Emitter.Union(upstreamA: self, upstreamB: other)
+    Emitters.Union(upstreamA: self, upstreamB: other)
   }
 }
 
-// MARK: - Emitter.Union
+// MARK: - Emitters.Union
 
-extension Emitter {
+extension Emitters {
 
-  public struct Union<UpstreamA: Emitting, UpstreamB: Emitting>: Emitting
+  public struct Union<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
     where UpstreamA.Output: UnionType.Unionable, UpstreamB.Output: UnionType.Unionable
   {
 
@@ -38,7 +38,7 @@ extension Emitter {
     public func subscribe<S: Subscriber>(
       _ subscriber: S
     )
-      -> AnyDisposable
+      -> AutoDisposable
       where S.Value == Output
     {
       IntermediateSub<S>(downstream: subscriber)
@@ -68,7 +68,7 @@ extension Emitter {
         upstreamA: UpstreamA,
         upstreamB: UpstreamB
       )
-        -> AnyDisposable
+        -> AutoDisposable
       {
         let disposableA = upstreamA
           .subscribe(
@@ -84,7 +84,7 @@ extension Emitter {
               joinInit: UnionType.Of2.b
             )
           )
-        let disposable = AnyDisposable {
+        let disposable = AutoDisposable {
           disposableA.dispose()
           disposableB.dispose()
         }
@@ -107,7 +107,7 @@ extension Emitter {
 
       // MARK: Private
 
-      private var disposable: AnyDisposable?
+      private var disposable: AutoDisposable?
 
     }
 

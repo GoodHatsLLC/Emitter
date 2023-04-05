@@ -1,21 +1,21 @@
 import Disposable
 
-extension Emitting {
-  public func combineLatest<Other: Emitting>(
+extension Emitter {
+  public func combineLatest<Other: Emitter>(
     _ other: Other
-  ) -> some Emitting<Tuple.Size2<Output, Other.Output>> {
-    Emitter.CombineLatest(upstreamA: self, upstreamB: other)
+  ) -> some Emitter<Tuple.Size2<Output, Other.Output>> {
+    Emitters.CombineLatest(upstreamA: self, upstreamB: other)
   }
 }
 
-// MARK: - Emitter.CombineLatest
+// MARK: - Emitters.CombineLatest
 
-extension Emitter {
+extension Emitters {
 
   public struct CombineLatest<
-    UpstreamA: Emitting & Sendable,
-    UpstreamB: Emitting & Sendable
-  >: Emitting,
+    UpstreamA: Emitter & Sendable,
+    UpstreamB: Emitter & Sendable
+  >: Emitter,
     Sendable
     where UpstreamA.Output: Sendable, UpstreamB.Output: Sendable
   {
@@ -37,7 +37,7 @@ extension Emitter {
     public typealias Output = Tuple.Size2<OutputA, OutputB>
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AnyDisposable where S.Value == Output
+      -> AutoDisposable where S.Value == Output
     {
       let stage = DisposableStage()
       let sub = Sub(downstream: subscriber)
@@ -50,7 +50,7 @@ extension Emitter {
         .subscribe(mapB)
         .stage(on: stage)
       return stage
-        .erase()
+        .auto()
     }
 
     // MARK: Private

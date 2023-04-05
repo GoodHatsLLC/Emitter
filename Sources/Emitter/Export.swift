@@ -1,2 +1,2 @@
 @_exported import Disposable
-public enum Emitter { }
+public enum Emitters { }

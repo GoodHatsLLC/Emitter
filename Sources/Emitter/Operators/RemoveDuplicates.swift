@@ -1,19 +1,19 @@
 import Disposable
 
-extension Emitting {
-  public func removeDuplicates() -> some Emitting<Output>
+extension Emitter {
+  public func removeDuplicates() -> some Emitter<Output>
     where Output: Equatable
   {
-    Emitter.RemoveDuplicates(upstream: self)
+    Emitters.RemoveDuplicates(upstream: self)
   }
 }
 
-// MARK: - Emitter.RemoveDuplicates
+// MARK: - Emitters.RemoveDuplicates
 
-extension Emitter {
+extension Emitters {
   // MARK: - RemoveDuplicates
 
-  public struct RemoveDuplicates<Upstream: Emitting, Output: Sendable>: Emitting
+  public struct RemoveDuplicates<Upstream: Emitter, Output: Sendable>: Emitter
     where Output: Equatable,
     Upstream.Output == Output
   {
@@ -29,7 +29,7 @@ extension Emitter {
     // MARK: Public
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AnyDisposable
+      -> AutoDisposable
       where S.Value == Output, Output: Equatable
     {
       upstream.subscribe(Sub<S>(downstream: subscriber))

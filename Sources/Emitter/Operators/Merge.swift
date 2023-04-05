@@ -1,19 +1,19 @@
 import Disposable
 
-extension Emitting {
-  public func merge<Other: Emitting>(
+extension Emitter {
+  public func merge<Other: Emitter>(
     _ other: Other
-  ) -> some Emitting<Output> where Other.Output == Output {
-    Emitter.Merge(upstreamA: self, upstreamB: other)
+  ) -> some Emitter<Output> where Other.Output == Output {
+    Emitters.Merge(upstreamA: self, upstreamB: other)
   }
 }
 
-// MARK: - Emitter.Merge
+// MARK: - Emitters.Merge
 
-extension Emitter {
+extension Emitters {
   // MARK: - Merge
 
-  public struct Merge<UpstreamA: Emitting, UpstreamB: Emitting, Output: Sendable>: Emitting
+  public struct Merge<UpstreamA: Emitter, UpstreamB: Emitter, Output: Sendable>: Emitter
     where UpstreamA.Output == Output, UpstreamB.Output == Output
   {
 
@@ -35,7 +35,7 @@ extension Emitter {
     public func subscribe<S: Subscriber>(
       _ subscriber: S
     )
-      -> AnyDisposable
+      -> AutoDisposable
       where S.Value == Output
     {
       IntermediateSub<S>(downstream: subscriber)
@@ -62,14 +62,14 @@ extension Emitter {
       fileprivate let downstream: Downstream
 
       fileprivate func subscribe(
-        upstreamA: some Emitting<Output>,
-        upstreamB: some Emitting<Output>
+        upstreamA: some Emitter<Output>,
+        upstreamB: some Emitter<Output>
       )
-        -> AnyDisposable
+        -> AutoDisposable
       {
         let disposableA = upstreamA.subscribe(self)
         let disposableB = upstreamB.subscribe(self)
-        let disposable = AnyDisposable {
+        let disposable = AutoDisposable {
           disposableA.dispose()
           disposableB.dispose()
         }
@@ -92,7 +92,7 @@ extension Emitter {
 
       // MARK: Private
 
-      private var disposable: AnyDisposable?
+      private var disposable: AutoDisposable?
 
     }
 

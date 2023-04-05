@@ -1,14 +1,14 @@
 import Disposable
 import Foundation
 
-extension Emitting {
+extension Emitter {
 
   public nonisolated func subscribe(
     value: @escaping (_ value: Output) -> Void,
     finished: @escaping () -> Void = { },
     failed: @escaping (_ error: Error) -> Void = { _ in }
   )
-    -> AnyDisposable
+    -> AutoDisposable
   {
     subscribe(
       Subscribe(

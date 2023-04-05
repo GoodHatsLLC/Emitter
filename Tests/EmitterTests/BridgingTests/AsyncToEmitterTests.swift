@@ -28,7 +28,7 @@ final class AsyncToEmitterTests: XCTestCase {
       continuation.finish()
     }
     var record: [String] = []
-    Emitter.bridge(stream)
+    Emitters.bridge(stream)
       .subscribe { value in
         record.append(value)
       } finished: {
@@ -44,7 +44,7 @@ final class AsyncToEmitterTests: XCTestCase {
     let entries = Array(0 ..< 100)
     let subject = PublishSubject<Int>()
     var record: [Int] = []
-    Emitter.bridge(subject.values)
+    Emitters.bridge(subject.values)
       .subscribe { value in
         record.append(value)
         if record.count == entries.count {

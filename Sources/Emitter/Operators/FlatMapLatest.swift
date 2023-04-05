@@ -1,25 +1,25 @@
 import Disposable
 
-extension Emitting {
+extension Emitter {
   public func flatMapLatest<NewOutput: Sendable>(
-    producer: @escaping @Sendable (Output) -> some Emitting<NewOutput>
-  ) -> some Emitting<NewOutput> {
-    Emitter.FlatMapLatest(upstream: self, producer: producer)
+    producer: @escaping @Sendable (Output) -> some Emitter<NewOutput>
+  ) -> some Emitter<NewOutput> {
+    Emitters.FlatMapLatest(upstream: self, producer: producer)
   }
 }
 
-// MARK: - Emitter.FlatMapLatest
+// MARK: - Emitters.FlatMapLatest
 
-extension Emitter {
+extension Emitters {
   // MARK: - FlatMapLatest
 
-  public struct FlatMapLatest<Upstream: Emitting, Output: Sendable>: Emitting {
+  public struct FlatMapLatest<Upstream: Emitter, Output: Sendable>: Emitter {
 
     // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
-      producer: @escaping @Sendable (Upstream.Output) -> some Emitting<Output>
+      producer: @escaping @Sendable (Upstream.Output) -> some Emitter<Output>
     ) where Upstream.Output == Upstream.Output {
       self.producer = { producer($0).erase() }
       self.upstream = upstream
@@ -31,7 +31,7 @@ extension Emitter {
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AnyDisposable
+      -> AutoDisposable
       where S.Value == Output
     {
       upstream.subscribe(
@@ -108,7 +108,7 @@ extension Emitter {
 
       private let upstream: Upstream
       private var current: InnerSub<Downstream>?
-      private var currentDisp: AnyDisposable?
+      private var currentDisp: AutoDisposable?
 
     }
 

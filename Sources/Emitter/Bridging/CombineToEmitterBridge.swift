@@ -11,15 +11,15 @@ import enum Combine.Subscribers
 import protocol Combine.Subscription
 import Disposable
 
-extension Emitter {
+extension Emitters {
   public static func bridge<Publisher: Combine.Publisher>(_ publisher: Publisher)
-    -> some Emitting<Publisher.Output>
+    -> some Emitter<Publisher.Output>
   {
     CombineToEmitterBridge(upstream: publisher)
   }
 }
 
-public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitting, @unchecked Sendable {
+public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unchecked Sendable {
 
   // MARK: Lifecycle
 
@@ -36,12 +36,12 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitting, @un
 
   public let upstream: Upstream
 
-  public func subscribe<S>(_ subscriber: S) -> AnyDisposable where S: Subscriber,
+  public func subscribe<S>(_ subscriber: S) -> AutoDisposable where S: Subscriber,
     Upstream.Output == S.Value
   {
     let subscriber = Sub<S, Upstream.Failure>(downstream: subscriber)
     upstream.receive(subscriber: subscriber)
-    return subscriber.erase()
+    return subscriber.auto()
   }
 
   // MARK: Private
@@ -65,9 +65,15 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitting, @un
     let combineIdentifier = CombineIdentifier()
 
     let downstream: Downstream
-    var subscription: AnyDisposable?
+    var subscription: AutoDisposable?
+    var hasStarted: Bool = false
+
+    var isDisposed: Bool {
+      subscription?.isDisposed ?? !hasStarted
+    }
 
     func receive(_ input: Downstream.Value) -> Subscribers.Demand {
+      hasStarted = true
       downstream.receive(emission: .value(input))
       return .unlimited
     }
@@ -83,7 +89,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitting, @un
 
     func receive(subscription: Combine.Subscription) {
       subscription.request(.unlimited)
-      self.subscription = AnyDisposable(subscription)
+      self.subscription = ErasedDisposable(subscription).auto()
     }
 
     func dispose() {

@@ -1,6 +1,6 @@
 import Disposable
 
-extension Emitting {
+extension Emitter {
   public typealias AsyncEmitting<Output> = AsyncThrowingStream<Output, Error>
 
   public var values: AsyncEmitting<Output> {
@@ -12,7 +12,7 @@ extension Emitting {
 
 public struct EmitterToAsyncBridge<Output> {
 
-  public init(_ emitter: some Emitting<Output>) {
+  public init(_ emitter: some Emitter<Output>) {
     self.values = .init { continuation in
 
       let disposable = emitter.subscribe(

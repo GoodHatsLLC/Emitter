@@ -26,6 +26,8 @@ final class Subscription<Value: Sendable>: Sendable, Disposable, Hashable {
 
   // MARK: Internal
 
+  var isDisposed: Bool { false }
+
   func dispose() {
     // TODO: Notify source?
   }

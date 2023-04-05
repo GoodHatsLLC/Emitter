@@ -14,17 +14,27 @@ public actor AsyncValue<T: Sendable> {
   public var value: T {
     get async {
       if let _value {
-        _value
+        return _value
       } else {
-        await withCheckedContinuation { continuation in
-          self.continuation = continuation
+        return await withCheckedContinuation { continuation in
+          self.continuations.append(continuation)
         }
       }
     }
   }
 
   public func resolve(_ value: T, act: @escaping () async -> Void = { }) async {
-    await setFinal(value: value, act: act)
+    guard _value == nil
+    else {
+      return
+    }
+    _value = value
+    await act()
+    let continuations = continuations
+    self.continuations.removeAll()
+    for continuation in continuations {
+      continuation.resume(with: .success(value))
+    }
   }
 
   public func ifMatching(_ filter: (_ value: T?) -> Bool, run: @escaping () async -> Void) async {
@@ -36,16 +46,6 @@ public actor AsyncValue<T: Sendable> {
   // MARK: Private
 
   private var _value: T?
-  private var continuation: CheckedContinuation<T, Never>?
-
-  private func setFinal(value: T, act: () async -> Void = { }) async {
-    guard _value == nil
-    else {
-      return
-    }
-    _value = value
-    await act()
-    continuation?.resume(with: .success(value))
-  }
+  private var continuations: [CheckedContinuation<T, Never>] = []
 
 }

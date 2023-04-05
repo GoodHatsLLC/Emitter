@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - ValueSubject
 
-public final class ValueSubject<Value: Sendable>: Emitting, Subject, @unchecked
+public final class ValueSubject<Value: Sendable>: Emitter, Subject, @unchecked
 Sendable {
 
   // MARK: Lifecycle
@@ -84,7 +84,7 @@ extension ValueSubject {
   public func subscribe<S: Subscriber>(
     _ subscriber: S
   )
-    -> AnyDisposable
+    -> AutoDisposable
     where S.Value == Value
   {
     let subscription = Subscription<Value>(
@@ -101,7 +101,7 @@ extension ValueSubject {
 
     if didSubscribe {
       subscription.receive(emission: .value(value))
-      return AnyDisposable {
+      return AutoDisposable {
         let disposable = self.lock.withLock {
           self.subscriptions.remove(subscription)
         }
@@ -110,7 +110,7 @@ extension ValueSubject {
     } else {
       subscription.receive(emission: .finished)
       subscription.dispose()
-      return subscription.erase()
+      return subscription.auto()
     }
   }
 }

@@ -1,5 +1,4 @@
-// swift-tools-version: 5.7
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.8
 
 import PackageDescription
 
@@ -15,7 +14,10 @@ let package = Package(
     ),
   ],
   dependencies: [
-    .package(url: "https://github.com/GoodHatsLLC/Disposable.git", from: .init(0, 7, 0)),
+    .package(
+      url: "https://github.com/GoodHatsLLC/Disposable.git",
+      from: .init(0, 8, 0)
+    ),
   ],
   targets: [
     .target(

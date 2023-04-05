@@ -1,7 +1,7 @@
 import Disposable
 
-extension Emitting {
-  public func onMainActor() -> some Emitting<Output> {
+extension Emitter {
+  public func onMainActor() -> some Emitter<Output> {
     redirect { event, downstream in
       Task { @MainActor in
         downstream(event)

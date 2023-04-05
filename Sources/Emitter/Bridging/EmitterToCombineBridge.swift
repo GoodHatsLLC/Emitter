@@ -1,7 +1,7 @@
 #if canImport(Combine)
 import Combine
 
-extension Emitting {
+extension Emitter {
   public func asCombinePublisher() -> some Publisher<Output, Error> {
     EmitterToCombineBridge(upstream: self)
   }
@@ -9,7 +9,7 @@ extension Emitting {
 
 // MARK: - EmitterCombineBridge
 
-public struct EmitterToCombineBridge<Upstream: Emitting>: Combine.Publisher {
+public struct EmitterToCombineBridge<Upstream: Emitter>: Combine.Publisher {
 
   // MARK: Lifecycle
 
@@ -39,7 +39,7 @@ public struct EmitterToCombineBridge<Upstream: Emitting>: Combine.Publisher {
   // MARK: Internal
 
   struct Subscription: Combine.Subscription {
-    let disposable: AnyDisposable
+    let disposable: AutoDisposable
     let combineIdentifier = CombineIdentifier()
     func request(_: Subscribers.Demand) { }
     func cancel() {
@@ -61,7 +61,7 @@ public struct EmitterToCombineBridge<Upstream: Emitting>: Combine.Publisher {
       }
     }
 
-    func receive(subscription: AnyDisposable) {
+    func receive(subscription: AutoDisposable) {
       downstream.receive(subscription: Subscription(disposable: subscription))
     }
 

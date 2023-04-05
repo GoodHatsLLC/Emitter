@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - PublishSubject
 
-public final class PublishSubject<Value: Sendable>: Emitting, Subject, @unchecked
+public final class PublishSubject<Value: Sendable>: Emitter, Subject, @unchecked
 Sendable {
 
   // MARK: Lifecycle
@@ -16,7 +16,7 @@ Sendable {
 
   // MARK: Private
 
-  private let lock = NSLock()
+  private let lock = Locked<Void>()
   private var subscriptions: Set<Subscription<Value>> = []
   private var isActive = true
 }
@@ -61,7 +61,7 @@ extension PublishSubject {
   public func subscribe<S: Subscriber>(
     _ subscriber: S
   )
-    -> AnyDisposable
+    -> AutoDisposable
     where S.Value == Value
   {
     let subscription = Subscription<Value>(
@@ -76,16 +76,14 @@ extension PublishSubject {
       }
 
     if didSubscribe {
-      return AnyDisposable {
-        let disposable = self.lock.withLock {
+      return ErasedDisposable {
+        _ = self.lock.withLock {
           self.subscriptions.remove(subscription)
         }
-        disposable?.dispose()
-      }
+      }.auto()
     } else {
       subscription.receive(emission: .finished)
-      subscription.dispose()
-      return subscription.erase()
+      return AutoDisposable { }
     }
   }
 }

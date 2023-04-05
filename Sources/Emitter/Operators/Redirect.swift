@@ -1,22 +1,22 @@
 import Disposable
 
-extension Emitting {
+extension Emitter {
   func redirect(
     _ redirection: @escaping @Sendable (
       _ event: Emission<Output>,
       _ downstream: @escaping @Sendable (Emission<Output>) -> Void
     ) -> Void
-  ) -> some Emitting<Output> {
-    Emitter.Redirect(redirection: redirection, upstream: self)
+  ) -> some Emitter<Output> {
+    Emitters.Redirect(redirection: redirection, upstream: self)
   }
 }
 
-// MARK: - Emitter.Redirect
+// MARK: - Emitters.Redirect
 
-extension Emitter {
+extension Emitters {
   // MARK: - SubscribeOn
 
-  struct Redirect<Upstream: Emitting>: Emitting, Sendable {
+  struct Redirect<Upstream: Emitter>: Emitter, Sendable {
 
     // MARK: Lifecycle
 
@@ -37,7 +37,7 @@ extension Emitter {
 
     let upstream: Upstream
 
-    func subscribe<S: Subscriber>(_ subscriber: S) -> AnyDisposable
+    func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
       where S.Value == Output
     {
       upstream.subscribe(
