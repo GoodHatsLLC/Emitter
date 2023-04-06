@@ -35,7 +35,7 @@ final class EmitterToAsyncTests: XCTestCase {
       }
     }.result
 
-    await Task.flushHack()
+    await Flush.tasks()
 
     // cancel task to finish
     handle.cancel()

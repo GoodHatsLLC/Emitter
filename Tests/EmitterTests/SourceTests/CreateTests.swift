@@ -32,7 +32,7 @@ final class CreateTests: XCTestCase {
       }
       .stage(on: stage)
 
-    await Task.flushHack()
+    await Flush.tasks()
 
     XCTAssertEqual(record, entries)
   }
@@ -62,7 +62,7 @@ final class CreateTests: XCTestCase {
       }
       .stage(on: stage)
 
-    await Task.flushHack()
+    await Flush.tasks()
 
     XCTAssert(didFinish)
   }
@@ -93,7 +93,7 @@ final class CreateTests: XCTestCase {
       }
       .stage(on: stage)
 
-    await Task.flushHack()
+    await Flush.tasks()
 
     XCTAssert(didFail)
   }
@@ -127,7 +127,7 @@ final class CreateTests: XCTestCase {
       }
       .stage(on: stage)
 
-    await Task.flushHack()
+    await Flush.tasks()
 
     XCTAssertEqual(record, entries)
     XCTAssert(didFinish)
