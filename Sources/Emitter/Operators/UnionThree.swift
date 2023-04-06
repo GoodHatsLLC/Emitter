@@ -1,39 +1,39 @@
 import Disposable
 
 extension Emitter {
-  public func union<Other: Emitter>(
-    _ other: Other
-  ) -> some Emitter<UnionType.Of2<Output, Other.Output>>
-    where Other.Output: UnionType.Unionable, Output: UnionType.Unionable
-  {
-    Emitters.Union(upstreamA: self, upstreamB: other)
+  public func union<OtherB: Emitter, OtherC: Emitter>(
+    _ otherB: OtherB,
+    _ otherC: OtherC
+  ) -> some Emitter<Union3<Output, OtherB.Output, OtherC.Output>> {
+    Emitters.UnionThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
   }
 }
 
-// MARK: - Emitters.Union
+// MARK: - Emitters.UnionThree
 
 extension Emitters {
 
-  public struct Union<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
-    where UpstreamA.Output: UnionType.Unionable, UpstreamB.Output: UnionType.Unionable
-  {
+  public struct UnionThree<UpstreamA: Emitter, UpstreamB: Emitter, UpstreamC: Emitter>: Emitter {
 
     // MARK: Lifecycle
 
     public init(
       upstreamA: UpstreamA,
-      upstreamB: UpstreamB
+      upstreamB: UpstreamB,
+      upstreamC: UpstreamC
     ) {
       self.upstreamA = upstreamA
       self.upstreamB = upstreamB
+      self.upstreamC = upstreamC
     }
 
     // MARK: Public
 
-    public typealias Output = UnionType.Of2<UpstreamA.Output, UpstreamB.Output>
+    public typealias Output = Union3<UpstreamA.Output, UpstreamB.Output, UpstreamC.Output>
 
     public let upstreamA: UpstreamA
     public let upstreamB: UpstreamB
+    public let upstreamC: UpstreamC
 
     public func subscribe<S: Subscriber>(
       _ subscriber: S
@@ -44,7 +44,8 @@ extension Emitters {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
           upstreamA: upstreamA,
-          upstreamB: upstreamB
+          upstreamB: upstreamB,
+          upstreamC: upstreamC
         )
     }
 
@@ -66,7 +67,8 @@ extension Emitters {
 
       fileprivate func subscribe(
         upstreamA: UpstreamA,
-        upstreamB: UpstreamB
+        upstreamB: UpstreamB,
+        upstreamC: UpstreamC
       )
         -> AutoDisposable
       {
@@ -74,19 +76,27 @@ extension Emitters {
           .subscribe(
             Proxy(
               downstream: self,
-              joinInit: UnionType.Of2.a
+              joinInit: Union3.a
             )
           )
         let disposableB = upstreamB
           .subscribe(
             Proxy(
               downstream: self,
-              joinInit: UnionType.Of2.b
+              joinInit: Union3.b
+            )
+          )
+        let disposableC = upstreamC
+          .subscribe(
+            Proxy(
+              downstream: self,
+              joinInit: Union3.c
             )
           )
         let disposable = AutoDisposable {
           disposableA.dispose()
           disposableB.dispose()
+          disposableC.dispose()
         }
         self.disposable = disposable
         return disposable
