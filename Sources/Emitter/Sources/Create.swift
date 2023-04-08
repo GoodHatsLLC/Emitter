@@ -44,6 +44,7 @@ extension Emitters {
             guard let started = start()
             else {
               subscriptions.remove(subscription)
+              subscription.receive(emission: .finished)
               return false
             }
             disposable = started
@@ -59,8 +60,8 @@ extension Emitters {
         return AutoDisposable { }
       }
       return AutoDisposable { [subscriptions] in
-        let (subscriptionDisposable, sourceDisposable) = subscriptions.withLock { subscriptions in
-          let subscriptionDisposable = subscriptions.remove(subscription)
+        let sourceDisposable = subscriptions.withLock { subscriptions in
+          subscriptions.remove(subscription)
           let sourceDisposable: AutoDisposable?
           if subscriptions.isEmpty {
             sourceDisposable = self.disposable
@@ -68,9 +69,8 @@ extension Emitters {
           } else {
             sourceDisposable = nil
           }
-          return (subscriptionDisposable?.auto(), sourceDisposable)
+          return sourceDisposable
         }
-        subscriptionDisposable?.dispose()
         sourceDisposable?.dispose()
       }
     }

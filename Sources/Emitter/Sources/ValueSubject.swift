@@ -9,37 +9,33 @@ Sendable {
   // MARK: Lifecycle
 
   public init(_ value: Value) {
-    self.isActive = true
-    self._value = value
+    self.state = Locked((isActive: true, value: value, subs: []))
   }
 
   // MARK: Public
 
   public typealias Output = Value
 
-  public var value: Value {
-    get {
-      lock.withLock {
-        _value
-      }
-    }
-    set {
-      emit(.value(newValue))
-    }
-  }
-
   // MARK: Private
 
-  private let lock = NSLock()
-  private var isActive: Bool
-  private var _value: Value
-  private var subscriptions: Set<Subscription<Value>> = []
+  private let state: Locked<(isActive: Bool, value: Value, subs: Set<Subscription<Value>>)>
 }
 
 // MARK: - Source API
 extension ValueSubject {
 
   // MARK: Public
+
+  public var value: Value {
+    get {
+      state.withLock { state in
+        state.value
+      }
+    }
+    set {
+      emit(.value(newValue))
+    }
+  }
 
   public func finish() {
     emit(.finished)
@@ -56,27 +52,32 @@ extension ValueSubject {
   // MARK: Private
 
   private func emit(_ emission: Emission<Value>) {
-    let subs = lock.withLock {
-      stateEffects(emission)
-    }
-    for sub in subs {
-      sub.receive(emission: emission)
-    }
-  }
-
-  private func stateEffects(_ emission: Emission<Value>) -> Set<Subscription<Value>> {
-    let subs = subscriptions
     switch emission {
     case .failed,
          .finished:
-      isActive = false
-      subscriptions.removeAll()
+      let subs = state.withLock { state in
+        state.isActive = false
+        let subs = state.subs
+        state.subs.removeAll()
+        return subs
+      }
+      subs.forEach { sub in
+        sub.receive(emission: emission)
+      }
     case .value(let value):
-      _value = value
+      let subs: [Subscription<Value>] = state.withLock { state in
+        guard state.isActive
+        else {
+          return []
+        }
+        state.value = value
+        return Array(state.subs)
+      }
+      subs.forEach { sub in
+        sub.receive(emission: emission)
+      }
     }
-    return subs
   }
-
 }
 
 // MARK: - Emitter API
@@ -90,27 +91,28 @@ extension ValueSubject {
     let subscription = Subscription<Value>(
       subscriber: subscriber
     )
-
-    let didSubscribe = lock
-      .withLock {
-        if isActive {
-          subscriptions.insert(subscription)
+    let (didSubscribe, value) = state
+      .withLock { state in
+        if state.isActive {
+          state.subs.insert(subscription)
         }
-        return isActive
+        return (state.isActive, state.value)
       }
 
     if didSubscribe {
-      subscription.receive(emission: .value(value))
+      subscriber.receive(emission: .value(value))
       return AutoDisposable {
-        let disposable = self.lock.withLock {
-          self.subscriptions.remove(subscription)
+        if
+          let subscription = self.state.withLock(action: { state in
+            state.subs.remove(subscription)
+          })
+        {
+          subscription.receive(emission: .finished)
         }
-        disposable?.dispose()
       }
     } else {
       subscription.receive(emission: .finished)
-      subscription.dispose()
-      return subscription.auto()
+      return AutoDisposable { }
     }
   }
 }

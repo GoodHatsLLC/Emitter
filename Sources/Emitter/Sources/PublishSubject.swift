@@ -16,9 +16,8 @@ Sendable {
 
   // MARK: Private
 
-  private let lock = Locked<Void>()
-  private var subscriptions: Set<Subscription<Value>> = []
-  private var isActive = true
+  private let state =
+    Locked<(isActive: Bool, subs: Set<Subscription<Value>>)>((isActive: true, subs: []))
 }
 
 // MARK: - Source API
@@ -41,17 +40,25 @@ extension PublishSubject {
   // MARK: Private
 
   private func emit(_ emission: Emission<Value>) {
-    let subs = subscriptions
     switch emission {
     case .failed,
          .finished:
-      isActive = false
-      subscriptions.removeAll()
-    case _:
-      break
-    }
-    for subscription in subs {
-      subscription.receive(emission: emission)
+      let subs = state.withLock { state in
+        state.isActive = false
+        let subs = state.subs
+        state.subs.removeAll()
+        return subs
+      }
+      subs.forEach { sub in
+        sub.receive(emission: emission)
+      }
+    case .value:
+      let subs = state.withLock { state in
+        state.subs
+      }
+      subs.forEach { sub in
+        sub.receive(emission: emission)
+      }
     }
   }
 }
@@ -67,20 +74,24 @@ extension PublishSubject {
     let subscription = Subscription<Value>(
       subscriber: subscriber
     )
-    let didSubscribe = lock
-      .withLock {
-        if isActive {
-          subscriptions.insert(subscription)
+    let didSubscribe = state
+      .withLock { state in
+        if state.isActive {
+          state.subs.insert(subscription)
         }
-        return isActive
+        return state.isActive
       }
 
     if didSubscribe {
-      return ErasedDisposable {
-        _ = self.lock.withLock {
-          self.subscriptions.remove(subscription)
+      return AutoDisposable {
+        if
+          let subscription = self.state.withLock(action: { state in
+            state.subs.remove(subscription)
+          })
+        {
+          subscription.receive(emission: .finished)
         }
-      }.auto()
+      }
     } else {
       subscription.receive(emission: .finished)
       return AutoDisposable { }
