@@ -13,7 +13,7 @@ import Disposable
 
 extension Emitters {
   public static func bridge<Publisher: Combine.Publisher>(_ publisher: Publisher)
-    -> some Emitter<Publisher.Output>
+    -> some Emitter<Publisher.Output, Publisher.Failure>
   {
     CombineToEmitterBridge(upstream: publisher)
   }
@@ -31,13 +31,13 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
 
   // MARK: Public
 
-  public typealias Output = Upstream.Output
-  public typealias Failure = Error
+  public typealias Value = Upstream.Output
+  public typealias Failure = Upstream.Failure
 
   public let upstream: Upstream
 
-  public func subscribe<S>(_ subscriber: S) -> AutoDisposable where S: Subscriber,
-    Upstream.Output == S.Value
+  public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
+    where Upstream.Output == S.Value, Upstream.Failure == S.Failure
   {
     let subscriber = Sub<S, Upstream.Failure>(downstream: subscriber)
     upstream.receive(subscriber: subscriber)
@@ -47,7 +47,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
   // MARK: Private
 
   private final class Sub<Downstream: Subscriber, Failure: Error>: Combine.Subscriber, Disposable
-    where Downstream.Value == Output
+    where Downstream.Value == Value, Downstream.Failure == Failure
   {
 
     // MARK: Lifecycle
@@ -59,8 +59,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
     // MARK: Internal
 
     typealias Input = Downstream.Value
-
-    typealias Value = Output
+    typealias Value = Downstream.Value
 
     let combineIdentifier = CombineIdentifier()
 

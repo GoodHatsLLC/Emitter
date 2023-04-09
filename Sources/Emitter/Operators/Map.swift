@@ -1,9 +1,9 @@
 import Disposable
 
 extension Emitter {
-  public func map<NewOutput: Sendable>(
-    _ transformer: @escaping @Sendable (Output) -> NewOutput
-  ) -> some Emitter<NewOutput> {
+  public func map<TransformedValue>(
+    _ transformer: @escaping @Sendable (Value) -> TransformedValue
+  ) -> some Emitter<TransformedValue, Failure> {
     Emitters.Map(upstream: self, transformer: transformer)
   }
 }
@@ -13,13 +13,13 @@ extension Emitter {
 extension Emitters {
   // MARK: - Map
 
-  public struct Map<Upstream: Emitter, Output: Sendable>: Emitter {
+  public struct Map<Upstream: Emitter, TransformedValue>: Emitter {
 
     // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
-      transformer: @escaping @Sendable (Upstream.Output) -> Output
+      transformer: @escaping @Sendable (Upstream.Value) -> TransformedValue
     ) {
       self.transformer = transformer
       self.upstream = upstream
@@ -27,11 +27,14 @@ extension Emitters {
 
     // MARK: Public
 
-    public let transformer: @Sendable (Upstream.Output) -> Output
+    public typealias Value = TransformedValue
+    public typealias Failure = Upstream.Failure
+
+    public let transformer: @Sendable (Upstream.Value) -> Value
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Value == Output
+      where S.Value == Value, S.Failure == Failure
     {
       upstream.subscribe(
         Sub<S>(
@@ -44,19 +47,22 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == TransformedValue, Downstream.Failure == Upstream.Failure
     {
+
+      typealias Value = Upstream.Value
+      typealias Failure = Upstream.Failure
 
       fileprivate init(
         downstream: Downstream,
-        transformer: @escaping (Upstream.Output) -> Output
+        transformer: @escaping (Upstream.Value) -> TransformedValue
       ) {
         self.downstream = downstream
         self.transformer = transformer
       }
 
-      fileprivate func receive(emission: Emission<Upstream.Output>) {
-        let newEmission: Emission<Output>
+      fileprivate func receive(emission: Emission<Upstream.Value, Failure>) {
+        let newEmission: Emission<TransformedValue, Failure>
         switch emission {
         case .value(let value):
           newEmission = .value(transformer(value))
@@ -69,8 +75,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let transformer: (Upstream.Output)
-        -> Output
+      private let transformer: (Upstream.Value) -> TransformedValue
 
     }
 

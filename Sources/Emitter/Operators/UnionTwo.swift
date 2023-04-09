@@ -1,10 +1,10 @@
 import Disposable
 
 extension Emitter {
-  public func union<Other: Emitter>(
-    _ other: Other
-  ) -> some Emitter<Union2<Output, Other.Output>> {
-    Emitters.UnionTwo(upstreamA: self, upstreamB: other)
+  public func union<UpstreamB: Emitter>(
+    _ otherB: UpstreamB
+  ) -> some Emitter<Union2<Value, UpstreamB.Value>, Failure> where Failure == UpstreamB.Failure {
+    Emitters.UnionTwo(upstreamA: self, upstreamB: otherB)
   }
 }
 
@@ -12,7 +12,9 @@ extension Emitter {
 
 extension Emitters {
 
-  public struct UnionTwo<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter {
+  public struct UnionTwo<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
+    where UpstreamA.Failure == UpstreamB.Failure
+  {
 
     // MARK: Lifecycle
 
@@ -26,7 +28,8 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Output = Union2<UpstreamA.Output, UpstreamB.Output>
+    public typealias Value = Union2<UpstreamA.Value, UpstreamB.Value>
+    public typealias Failure = UpstreamA.Failure
 
     public let upstreamA: UpstreamA
     public let upstreamB: UpstreamB
@@ -35,7 +38,7 @@ extension Emitters {
       _ subscriber: S
     )
       -> AutoDisposable
-      where S.Value == Output
+      where S.Value == Value, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -47,7 +50,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -68,14 +71,14 @@ extension Emitters {
       {
         let disposableA = upstreamA
           .subscribe(
-            Proxy(
+            Proxy<UpstreamA.Value, UpstreamA.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union2.a
             )
           )
         let disposableB = upstreamB
           .subscribe(
-            Proxy(
+            Proxy<UpstreamB.Value, UpstreamB.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union2.b
             )
@@ -88,7 +91,7 @@ extension Emitters {
         return disposable
       }
 
-      fileprivate func receive(emission: Emission<Output>) {
+      fileprivate func receive(emission: Emission<Value, Failure>) {
         downstream.receive(emission: emission)
 
         switch emission {
@@ -107,20 +110,23 @@ extension Emitters {
 
     }
 
-    private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+    private struct Proxy<UpstreamValue, UpstreamFailure: Error, Downstream: Subscriber>: Subscriber
+      where Downstream.Failure == UpstreamFailure
     {
+
+      public typealias Value = UpstreamValue
+      public typealias Failure = Downstream.Failure
 
       fileprivate init(
         downstream: Downstream,
-        joinInit: @escaping (UpstreamValue) -> Output
+        joinInit: @escaping (UpstreamValue) -> Downstream.Value
       ) {
         self.downstream = downstream
         self.joinInit = joinInit
       }
 
-      fileprivate func receive(emission: Emission<UpstreamValue>) {
-        let forwarded: Emission<Output>
+      fileprivate func receive(emission: Emission<UpstreamValue, Failure>) {
+        let forwarded: Emission<Downstream.Value, Failure>
         switch emission {
         case .value(let value):
           forwarded = .value(joinInit(value))
@@ -133,9 +139,13 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let joinInit: (UpstreamValue) -> Output
+      private let joinInit: (UpstreamValue) -> Downstream.Value
 
     }
 
   }
 }
+
+// MARK: - Emitters.UnionTwo + Sendable
+
+extension Emitters.UnionTwo: Sendable where UpstreamA: Sendable, UpstreamB: Sendable { }

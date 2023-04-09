@@ -3,7 +3,7 @@ import Disposable
 extension Emitter {
   public func combineLatest<Other: Emitter>(
     _ other: Other
-  ) -> some Emitter<Tuple.Size2<Output, Other.Output>> {
+  ) -> some Emitter<Tuple.Size2<Value, Other.Value>, Failure> where Other.Failure == Failure {
     Emitters.CombineLatest(upstreamA: self, upstreamB: other)
   }
 }
@@ -14,10 +14,12 @@ extension Emitters {
 
   public struct CombineLatest<
     UpstreamA: Emitter & Sendable,
-    UpstreamB: Emitter & Sendable
+    UpstreamB: Emitter & Sendable,
+    Failure: Error
   >: Emitter,
     Sendable
-    where UpstreamA.Output: Sendable, UpstreamB.Output: Sendable
+    where UpstreamA.Failure == Failure,
+    UpstreamB.Failure == Failure
   {
 
     // MARK: Lifecycle
@@ -32,12 +34,12 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias OutputA = UpstreamA.Output
-    public typealias OutputB = UpstreamB.Output
-    public typealias Output = Tuple.Size2<OutputA, OutputB>
+    public typealias ValueA = UpstreamA.Value
+    public typealias ValueB = UpstreamB.Value
+    public typealias Value = Tuple.Size2<ValueA, ValueB>
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AutoDisposable where S.Value == Output
+      -> AutoDisposable where S.Value == Value, S.Failure == Failure
     {
       let stage = DisposableStage()
       let sub = Sub(downstream: subscriber)
@@ -56,12 +58,12 @@ extension Emitters {
     // MARK: Private
 
     private enum JoinSubInput {
-      case a(OutputA)
-      case b(OutputB)
+      case a(ValueA)
+      case b(ValueB)
     }
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -72,7 +74,7 @@ extension Emitters {
 
       // MARK: Public
 
-      public func receive(emission: Emission<JoinSubInput>) {
+      public func receive(emission: Emission<JoinSubInput, Failure>) {
         switch emission {
         case .value(let value):
           switch value {
@@ -98,13 +100,13 @@ extension Emitters {
 
       private let downstream: Downstream
 
-      private var lastA: OutputA?
-      private var lastB: OutputB?
+      private var lastA: ValueA?
+      private var lastB: ValueB?
 
     }
 
     private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber
-      where Downstream.Value == JoinSubInput
+      where Downstream.Value == JoinSubInput, Downstream.Failure == Failure
     {
 
       fileprivate init(
@@ -115,8 +117,8 @@ extension Emitters {
         self.joinInit = joinInit
       }
 
-      fileprivate func receive(emission: Emission<UpstreamValue>) {
-        let forwarded: Emission<JoinSubInput>
+      fileprivate func receive(emission: Emission<UpstreamValue, Failure>) {
+        let forwarded: Emission<JoinSubInput, Failure>
         switch emission {
         case .value(let value):
           forwarded = .value(joinInit(value))

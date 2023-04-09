@@ -15,7 +15,7 @@ final class ThreadingTests: XCTestCase {
 
   func testThreading_publishSubject() async throws {
     let lock = NSLock()
-    let subject = PublishSubject<Void>()
+    let subject = PublishSubject<Void, Never>()
     let asyncValue = AsyncValue<Int>()
     var count = 0
     subject
@@ -47,7 +47,7 @@ final class ThreadingTests: XCTestCase {
 
   func testThreading_valueSubject() async throws {
     let lock = NSLock()
-    let subject = ValueSubject<Void>(())
+    let subject = ValueSubject<Void, Never>(())
     let asyncValue = AsyncValue<Int>()
     let asyncIsReady = AsyncValue<Void>()
     var count = 0

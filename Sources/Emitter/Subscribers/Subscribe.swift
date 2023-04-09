@@ -4,7 +4,7 @@ import Foundation
 extension Emitter {
 
   public nonisolated func subscribe(
-    value: @escaping (_ value: Output) -> Void,
+    value: @escaping (_ value: Value) -> Void,
     finished: @escaping () -> Void = { },
     failed: @escaping (_ error: Error) -> Void = { _ in }
   )
@@ -22,7 +22,7 @@ extension Emitter {
 
 // MARK: - Subscribe
 
-private struct Subscribe<Value>: Subscriber {
+private struct Subscribe<Value, Failure: Error>: Subscriber {
 
   fileprivate init(
     value: @escaping (Value) -> Void,
@@ -34,7 +34,7 @@ private struct Subscribe<Value>: Subscriber {
     self.failedFunc = failed
   }
 
-  fileprivate func receive(emission: Emission<Value>) {
+  fileprivate func receive(emission: Emission<Value, Failure>) {
     switch emission {
     case .value(let value):
       valueFunc(value)

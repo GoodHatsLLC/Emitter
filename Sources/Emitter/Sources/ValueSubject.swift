@@ -3,8 +3,7 @@ import Foundation
 
 // MARK: - ValueSubject
 
-public final class ValueSubject<Value: Sendable>: Emitter, Subject, @unchecked
-Sendable {
+public final class ValueSubject<Value, Failure: Error>: Emitter, Subject {
 
   // MARK: Lifecycle
 
@@ -14,11 +13,11 @@ Sendable {
 
   // MARK: Public
 
-  public typealias Output = Value
+  public typealias Value = Value
 
   // MARK: Private
 
-  private let state: Locked<(isActive: Bool, value: Value, subs: Set<Subscription<Value>>)>
+  private let state: Locked<(isActive: Bool, value: Value, subs: Set<Subscription<Value, Failure>>)>
 }
 
 // MARK: - Source API
@@ -45,13 +44,13 @@ extension ValueSubject {
     emit(.value(value))
   }
 
-  public func fail(_ error: some Error) {
+  public func fail(_ error: Failure) {
     emit(.failed(error))
   }
 
   // MARK: Private
 
-  private func emit(_ emission: Emission<Value>) {
+  private func emit(_ emission: Emission<Value, Failure>) {
     switch emission {
     case .failed,
          .finished:
@@ -65,7 +64,7 @@ extension ValueSubject {
         sub.receive(emission: emission)
       }
     case .value(let value):
-      let subs: [Subscription<Value>] = state.withLock { state in
+      let subs: [Subscription<Value, Failure>] = state.withLock { state in
         guard state.isActive
         else {
           return []
@@ -86,9 +85,9 @@ extension ValueSubject {
     _ subscriber: S
   )
     -> AutoDisposable
-    where S.Value == Value
+    where S.Value == Value, S.Failure == Failure
   {
-    let subscription = Subscription<Value>(
+    let subscription = Subscription<Value, Failure>(
       subscriber: subscriber
     )
     let (didSubscribe, value) = state
@@ -116,3 +115,7 @@ extension ValueSubject {
     }
   }
 }
+
+// MARK: Sendable
+
+extension ValueSubject: Sendable where Value: Sendable { }

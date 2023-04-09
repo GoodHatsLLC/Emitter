@@ -16,8 +16,8 @@ final class CombineLatestTests: XCTestCase {
 
   func testStream_combineLatest() throws {
     let record: Unchecked<[Tuple.Size2<Int, String>]> = .init([])
-    let sourceA: PublishSubject<Int> = .init()
-    let sourceB: PublishSubject<String> = .init()
+    let sourceA: PublishSubject<Int, Never> = .init()
+    let sourceB: PublishSubject<String, Never> = .init()
 
     sourceA
       .combineLatest(sourceB)
@@ -50,13 +50,13 @@ final class CombineLatestTests: XCTestCase {
 
   func test_dispose_releasesResources() throws {
     let record: Unchecked<[Tuple.Size2<Int, String>]> = .init([])
-    weak var weakSourceA: PublishSubject<Int>?
-    weak var weakSourceB: ValueSubject<String>?
+    weak var weakSourceA: PublishSubject<Int, Never>?
+    weak var weakSourceB: ValueSubject<String, Never>?
 
     ({
       ({
-        let sourceA: PublishSubject<Int> = .init()
-        let sourceB: ValueSubject<String> = .init("Hi")
+        let sourceA: PublishSubject<Int, Never> = .init()
+        let sourceB: ValueSubject<String, Never> = .init("Hi")
         weakSourceA = sourceA
         weakSourceB = sourceB
 

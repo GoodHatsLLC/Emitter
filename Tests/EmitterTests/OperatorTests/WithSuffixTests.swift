@@ -16,7 +16,7 @@ final class WithSuffixTests: XCTestCase {
 
   func test_suffix() throws {
     let record: Unchecked<[String]> = .init([])
-    let source = PublishSubject<String>()
+    let source = PublishSubject<String, Never>()
     let suffixed = source
       .withSuffix("z", "z")
       .withSuffix(["0", "1", "2", "3"])

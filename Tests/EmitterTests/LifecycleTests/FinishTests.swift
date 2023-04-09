@@ -6,7 +6,7 @@ import XCTest
 
 final class FinishTests: XCTestCase {
 
-  var source: PublishSubject<String>!
+  var source: PublishSubject<String, Error>!
   let stage = DisposableStage()
 
   override func setUp() {

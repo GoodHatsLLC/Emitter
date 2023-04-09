@@ -1,11 +1,11 @@
 import Disposable
 
 extension Emitter {
-  public func withSuffix(_ prefix: Output...) -> some Emitter<Output> {
+  public func withSuffix(_ prefix: Value...) -> some Emitter<Value, Failure> {
     Emitters.WithSuffix(upstream: self, suffixValues: prefix)
   }
 
-  public func withSuffix(_ prefix: [Output]) -> some Emitter<Output> {
+  public func withSuffix(_ prefix: [Value]) -> some Emitter<Value, Failure> {
     Emitters.WithSuffix(upstream: self, suffixValues: prefix)
   }
 }
@@ -21,7 +21,7 @@ extension Emitters {
 
     public init(
       upstream: Upstream,
-      suffixValues: [Output]
+      suffixValues: [Value]
     ) {
       self.upstream = upstream
       self.suffixValues = suffixValues
@@ -29,11 +29,12 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Output = Upstream.Output
+    public typealias Value = Upstream.Value
+    public typealias Failure = Upstream.Failure
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Output
+      where S.Value == Value, S.Failure == Failure
     {
       return upstream.subscribe(
         Sub<S>(
@@ -46,14 +47,14 @@ extension Emitters {
     // MARK: Private
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
 
       public init(
         downstream: Downstream,
-        suffixValues: [Output]
+        suffixValues: [Value]
       ) {
         self.downstream = downstream
         self.suffixValues = suffixValues
@@ -61,7 +62,7 @@ extension Emitters {
 
       // MARK: Public
 
-      public func receive(emission: Emission<Upstream.Output>) {
+      public func receive(emission: Emission<Upstream.Value, Upstream.Failure>) {
         switch emission {
         case .value:
           downstream.receive(emission: emission)
@@ -78,10 +79,10 @@ extension Emitters {
       // MARK: Private
 
       private let downstream: Downstream
-      private let suffixValues: [Output]
+      private let suffixValues: [Value]
     }
 
     private let upstream: Upstream
-    private let suffixValues: [Output]
+    private let suffixValues: [Value]
   }
 }

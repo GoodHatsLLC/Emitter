@@ -1,4 +1,5 @@
-public protocol Subscriber<Value> {
-  associatedtype Value: Sendable
-  nonisolated func receive(emission: Emission<Value>)
+public protocol Subscriber<Value, Failure> {
+  associatedtype Value
+  associatedtype Failure: Error
+  nonisolated func receive(emission: Emission<Value, Failure>)
 }

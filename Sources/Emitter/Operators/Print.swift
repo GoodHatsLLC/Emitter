@@ -18,7 +18,7 @@ extension Emitter {
     _ file: String = #fileID,
     _ line: Int = #line,
     _ column: Int = #column
-  ) -> some Emitter<Output> {
+  ) -> some Emitter<Value, Failure> {
     Emitters.Print(
       upstream: self,
       identifier: identifier,
@@ -37,9 +37,7 @@ extension Emitter {
 extension Emitters {
   // MARK: - Print
 
-  public struct Print<Upstream: Emitter, Output: Sendable>: Emitter
-    where Upstream.Output == Output
-  {
+  public struct Print<Upstream: Emitter>: Emitter {
 
     // MARK: Lifecycle
 
@@ -56,7 +54,7 @@ extension Emitters {
       if types.contains(.initializer) {
         Swift.print(
           """
-          [\(identifier)]<\(Output.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
+          [\(identifier)]<\(Value.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
           """
         )
       }
@@ -64,16 +62,19 @@ extension Emitters {
 
     // MARK: Public
 
+    public typealias Value = Upstream.Value
+    public typealias Failure = Upstream.Failure
+
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Output
+      where S.Value == Value, S.Failure == Failure
     {
       if types.contains(.subscribe) {
         Swift.print(
           """
-          [\(identifier)]<\(Output.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
+          [\(identifier)]<\(Value.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
           """
         )
       }
@@ -91,7 +92,7 @@ extension Emitters {
         if types.contains(.dispose) {
           Swift.print(
             """
-            [\(identifier)]<\(Output.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
+            [\(identifier)]<\(Value.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
             """
           )
         }
@@ -101,7 +102,7 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == Upstream.Value, Downstream.Failure == Upstream.Failure
     {
 
       // MARK: Lifecycle
@@ -120,15 +121,15 @@ extension Emitters {
 
       // MARK: Fileprivate
 
-      fileprivate func receive(emission: Emission<Output>) {
-        let newEmission: Emission<Output>
+      fileprivate func receive(emission: Emission<Value, Failure>) {
+        let newEmission: Emission<Value, Failure>
         switch emission {
         case .value(let value):
           newEmission = .value(value)
           if types.contains(.value) {
             Swift.print(
               """
-              [\(identifier)]<\(Output.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
+              [\(identifier)]<\(Value.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
               """
             )
           }
@@ -137,7 +138,7 @@ extension Emitters {
           if types.contains(.finished) {
             Swift.print(
               """
-              [\(identifier)]<\(Output.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
+              [\(identifier)]<\(Value.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
               """
             )
           }
@@ -146,7 +147,7 @@ extension Emitters {
           if types.contains(.error) {
             Swift.print(
               """
-              [\(identifier)]<\(Output.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
+              [\(identifier)]<\(Value.self)> init \(codeLoc.fileID):\(codeLoc.line):\(codeLoc.line)
               """
             )
           }

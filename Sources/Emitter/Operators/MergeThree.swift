@@ -1,11 +1,13 @@
 import Disposable
 
 extension Emitter {
-  public func merge<OtherA: Emitter, OtherB: Emitter>(
-    _ otherB: Self,
-    _ otherC: Self
-  ) -> some Emitter<Output> where OtherA.Output == Self.Output, OtherB.Output == Self.Output {
-    Emitters.MergeThree(upstreamA: erase(), upstreamB: otherB.erase(), upstreamC: otherC.erase())
+  public func merge<OtherB: Emitter, OtherC: Emitter>(
+    _ otherB: OtherB,
+    _ otherC: OtherC
+  ) -> some Emitter<Value, Failure> where OtherB.Value == Value, OtherC.Value == Value,
+    OtherB.Failure == Failure, OtherC.Failure == Failure
+  {
+    Emitters.MergeThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
   }
 }
 
@@ -14,14 +16,17 @@ extension Emitter {
 extension Emitters {
   // MARK: - Merge
 
-  public struct MergeThree<Upstream: Emitter>: Emitter where Upstream.Output: Sendable {
+  public struct MergeThree<UpstreamA: Emitter, UpstreamB: Emitter, UpstreamC: Emitter>: Emitter
+    where UpstreamB.Value == UpstreamA.Value, UpstreamB.Failure == UpstreamA.Failure,
+    UpstreamC.Value == UpstreamA.Value, UpstreamC.Failure == UpstreamA.Failure
+  {
 
     // MARK: Lifecycle
 
     public init(
-      upstreamA: Upstream,
-      upstreamB: Upstream,
-      upstreamC: Upstream
+      upstreamA: UpstreamA,
+      upstreamB: UpstreamB,
+      upstreamC: UpstreamC
     ) {
       self.upstreamA = upstreamA
       self.upstreamB = upstreamB
@@ -30,17 +35,18 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Output = Upstream.Output
+    public typealias Value = UpstreamA.Value
+    public typealias Failure = UpstreamA.Failure
 
-    public let upstreamA: Upstream
-    public let upstreamB: Upstream
-    public let upstreamC: Upstream
+    public let upstreamA: UpstreamA
+    public let upstreamB: UpstreamB
+    public let upstreamC: UpstreamC
 
     public func subscribe<S: Subscriber>(
       _ subscriber: S
     )
       -> AutoDisposable
-      where Output == S.Value
+      where S.Value == Value, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -53,7 +59,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Upstream.Output
+      where Downstream.Value == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -62,14 +68,19 @@ extension Emitters {
         self.downstream = downstream
       }
 
+      // MARK: Internal
+
+      typealias Value = UpstreamA.Value
+      typealias Failure = UpstreamA.Failure
+
       // MARK: Fileprivate
 
       fileprivate let downstream: Downstream
 
       fileprivate func subscribe(
-        upstreamA: Upstream,
-        upstreamB: Upstream,
-        upstreamC: Upstream
+        upstreamA: UpstreamA,
+        upstreamB: UpstreamB,
+        upstreamC: UpstreamC
       )
         -> AutoDisposable
       {
@@ -85,7 +96,7 @@ extension Emitters {
         return disposable
       }
 
-      fileprivate func receive(emission: Emission<Upstream.Output>) {
+      fileprivate func receive(emission: Emission<Value, Failure>) {
         downstream.receive(emission: emission)
 
         switch emission {
@@ -106,3 +117,8 @@ extension Emitters {
 
   }
 }
+
+// MARK: - Emitters.MergeThree + Sendable
+
+extension Emitters.MergeThree: Sendable where UpstreamA: Sendable, UpstreamB: Sendable,
+  UpstreamC: Sendable { }

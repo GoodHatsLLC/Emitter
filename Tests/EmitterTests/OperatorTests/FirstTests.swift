@@ -16,7 +16,7 @@ final class FirstTests: XCTestCase {
 
   func test_first() throws {
     var record: [String] = []
-    let source = PublishSubject<String>()
+    let source = PublishSubject<String, Never>()
 
     source
       .first()

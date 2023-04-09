@@ -42,7 +42,7 @@ final class AsyncToEmitterTests: XCTestCase {
 
   func testAsyncBridge_publishesAndFinishes_taskEvents() async throws {
     let entries = Array(0 ..< 100)
-    let subject = PublishSubject<Int>()
+    let subject = PublishSubject<Int, Never>()
     var record: [Int] = []
     Emitters.bridge(subject.values)
       .subscribe { value in

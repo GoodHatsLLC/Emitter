@@ -6,7 +6,7 @@ import XCTest
 
 final class EmitterToAsyncTests: XCTestCase {
 
-  var source: PublishSubject<String> = .init()
+  var source: PublishSubject<String, Never> = .init()
   let stage = DisposableStage()
 
   override func setUp() {

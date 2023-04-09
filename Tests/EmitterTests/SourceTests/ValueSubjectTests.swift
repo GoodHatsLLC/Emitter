@@ -17,7 +17,7 @@ final class ValueSubjectTests: XCTestCase {
   func test_emission() throws {
     var record: [String] = []
 
-    let source: ValueSubject<String> = .init("initial")
+    let source: ValueSubject<String, Never> = .init("initial")
 
     source
       .subscribe { value in
@@ -35,8 +35,8 @@ final class ValueSubjectTests: XCTestCase {
   func test_flatMapIssue() throws {
     var record: [String] = []
 
-    let sourceA: PublishSubject<Int> = .init()
-    let sourceB: ValueSubject<String> = .init("initial")
+    let sourceA: PublishSubject<Int, Never> = .init()
+    let sourceB: ValueSubject<String, Never> = .init("initial")
 
     sourceA
       .flatMapLatest { value in

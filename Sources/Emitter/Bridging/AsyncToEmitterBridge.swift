@@ -1,6 +1,8 @@
 
 extension Emitters {
-  public static func bridge<Seq: AsyncSequence>(_ sequence: Seq) -> some Emitter<Seq.Element> {
+  public static func bridge<Seq: AsyncSequence>(_ sequence: Seq)
+    -> some Emitter<Seq.Element, Error>
+  {
     AsyncToEmitterBridge(sequence)
   }
 }
@@ -11,20 +13,22 @@ public struct AsyncToEmitterBridge<Seq: AsyncSequence>: Emitter, @unchecked Send
 
   // MARK: Lifecycle
 
-  public init(_ sequence: Seq) where Output == Seq.Element {
+  public init(_ sequence: Seq) where Value == Seq.Element {
     self.seq = sequence
   }
 
   // MARK: Public
 
-  public typealias Output = Seq.Element
+  public typealias Failure = Error
+
+  public typealias Value = Seq.Element
 
   public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-    where Seq.Element == S.Value
+    where Seq.Element == S.Value, S.Failure == Error
   {
     let stage = DisposableStage()
     Emitters
-      .create(Output.self) { emit in
+      .create(Emission<Value, Error>.self) { emit in
         ErasedDisposable(Task {
           do {
             for try await value in seq {

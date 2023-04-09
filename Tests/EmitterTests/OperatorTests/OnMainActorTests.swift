@@ -17,7 +17,7 @@ final class OnMainActorTests: XCTestCase {
   func testStream_onMainActor() async throws {
     let record: Unchecked<[String]> = .init([])
     let block = AsyncValue<Void>()
-    Emitters.create(String.self) { emit in
+    Emitters.create(Emission<String, Error>.self) { emit in
       await withTaskGroup(of: Void.self) { group in
         for i in ["a", "b", "c", "d", "e"] {
           group.addTask {

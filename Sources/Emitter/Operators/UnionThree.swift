@@ -1,10 +1,12 @@
 import Disposable
 
 extension Emitter {
-  public func union<OtherB: Emitter, OtherC: Emitter>(
-    _ otherB: OtherB,
-    _ otherC: OtherC
-  ) -> some Emitter<Union3<Output, OtherB.Output, OtherC.Output>> {
+  public func union<UpstreamB: Emitter, UpstreamC: Emitter>(
+    _ otherB: UpstreamB,
+    _ otherC: UpstreamC
+  ) -> some Emitter<Union3<Value, UpstreamB.Value, UpstreamC.Value>, Failure>
+    where Failure == UpstreamB.Failure, Failure == UpstreamC.Failure
+  {
     Emitters.UnionThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
   }
 }
@@ -13,7 +15,9 @@ extension Emitter {
 
 extension Emitters {
 
-  public struct UnionThree<UpstreamA: Emitter, UpstreamB: Emitter, UpstreamC: Emitter>: Emitter {
+  public struct UnionThree<UpstreamA: Emitter, UpstreamB: Emitter, UpstreamC: Emitter>: Emitter
+    where UpstreamA.Failure == UpstreamB.Failure, UpstreamA.Failure == UpstreamC.Failure
+  {
 
     // MARK: Lifecycle
 
@@ -29,7 +33,8 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Output = Union3<UpstreamA.Output, UpstreamB.Output, UpstreamC.Output>
+    public typealias Value = Union3<UpstreamA.Value, UpstreamB.Value, UpstreamC.Value>
+    public typealias Failure = UpstreamA.Failure
 
     public let upstreamA: UpstreamA
     public let upstreamB: UpstreamB
@@ -39,7 +44,7 @@ extension Emitters {
       _ subscriber: S
     )
       -> AutoDisposable
-      where S.Value == Output
+      where S.Value == Value, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -52,7 +57,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -74,21 +79,21 @@ extension Emitters {
       {
         let disposableA = upstreamA
           .subscribe(
-            Proxy(
+            Proxy<UpstreamA.Value, UpstreamA.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union3.a
             )
           )
         let disposableB = upstreamB
           .subscribe(
-            Proxy(
+            Proxy<UpstreamB.Value, UpstreamB.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union3.b
             )
           )
         let disposableC = upstreamC
           .subscribe(
-            Proxy(
+            Proxy<UpstreamC.Value, UpstreamC.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union3.c
             )
@@ -102,7 +107,7 @@ extension Emitters {
         return disposable
       }
 
-      fileprivate func receive(emission: Emission<Output>) {
+      fileprivate func receive(emission: Emission<Value, Failure>) {
         downstream.receive(emission: emission)
 
         switch emission {
@@ -121,20 +126,23 @@ extension Emitters {
 
     }
 
-    private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+    private struct Proxy<UpstreamValue, UpstreamFailure: Error, Downstream: Subscriber>: Subscriber
+      where Downstream.Failure == UpstreamFailure
     {
+
+      public typealias Value = UpstreamValue
+      public typealias Failure = Downstream.Failure
 
       fileprivate init(
         downstream: Downstream,
-        joinInit: @escaping (UpstreamValue) -> Output
+        joinInit: @escaping (UpstreamValue) -> Downstream.Value
       ) {
         self.downstream = downstream
         self.joinInit = joinInit
       }
 
-      fileprivate func receive(emission: Emission<UpstreamValue>) {
-        let forwarded: Emission<Output>
+      fileprivate func receive(emission: Emission<UpstreamValue, Failure>) {
+        let forwarded: Emission<Downstream.Value, Failure>
         switch emission {
         case .value(let value):
           forwarded = .value(joinInit(value))
@@ -147,7 +155,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let joinInit: (UpstreamValue) -> Output
+      private let joinInit: (UpstreamValue) -> Downstream.Value
 
     }
 

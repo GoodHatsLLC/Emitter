@@ -16,7 +16,7 @@ final class CompactMapTests: XCTestCase {
 
   func testStream_compactMap() throws {
     let record: Unchecked<[String?]> = .init([])
-    let source = PublishSubject<String?>()
+    let source = PublishSubject<String?, Never>()
 
     source
       .compactMap { $0 }
@@ -38,11 +38,11 @@ final class CompactMapTests: XCTestCase {
 
   func test_dispose_releasesResources() throws {
     var record: [Int] = []
-    weak var weakSourceA: PublishSubject<Int?>?
+    weak var weakSourceA: PublishSubject<Int?, Never>?
 
     ({
       ({
-        let sourceA: PublishSubject<Int?> = .init()
+        let sourceA: PublishSubject<Int?, Never> = .init()
         weakSourceA = sourceA
 
         sourceA

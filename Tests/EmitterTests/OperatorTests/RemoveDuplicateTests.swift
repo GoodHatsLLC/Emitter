@@ -16,7 +16,7 @@ final class RemoveDuplicatesTests: XCTestCase {
 
   func testStream_removeDuplicates() {
     let record: Unchecked<[String]> = .init([])
-    let source = PublishSubject<String>()
+    let source = PublishSubject<String, Never>()
 
     source
       .removeDuplicates()
@@ -38,11 +38,11 @@ final class RemoveDuplicatesTests: XCTestCase {
 
   func test_dispose_releasesResources() throws {
     let record: Unchecked<[Int]> = .init([])
-    weak var weakSourceA: PublishSubject<Int>?
+    weak var weakSourceA: PublishSubject<Int, Never>?
 
     ({
       ({
-        let sourceA: PublishSubject<Int> = .init()
+        let sourceA: PublishSubject<Int, Never> = .init()
         weakSourceA = sourceA
 
         sourceA

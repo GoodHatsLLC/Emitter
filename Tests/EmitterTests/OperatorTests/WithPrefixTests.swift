@@ -16,7 +16,7 @@ final class WithPrefixTests: XCTestCase {
 
   func test_prefix() throws {
     let record: Unchecked<[String]> = .init([])
-    let source = PublishSubject<String>()
+    let source = PublishSubject<String, Never>()
     let prefixed = source
       .withPrefix("z", "z")
       .withPrefix(["0", "1", "2", "3"])

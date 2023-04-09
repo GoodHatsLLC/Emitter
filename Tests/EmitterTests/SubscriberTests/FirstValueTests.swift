@@ -15,8 +15,9 @@ final class FirstValueTests: XCTestCase {
   }
 
   func test_firstValue() async throws {
-    let source = PublishSubject<String>()
+    let source = PublishSubject<String, Never>()
     Task {
+      await Flush.tasks()
       let entries: [String] = ["a", "d", "e"]
       for entry in entries {
         source.emit(value: entry)

@@ -15,7 +15,7 @@ final class Benchmarks: XCTestCase {
 extension Benchmarks {
   func _test_map() {
     measure { // Time: 0.018 sec
-      let sourceA: PublishSubject<Int> = .init()
+      let sourceA: PublishSubject<Int, Never> = .init()
       let stage = DisposableStage()
       sourceA
         .map { $0 + 1 }
@@ -56,7 +56,7 @@ extension Benchmarks {
 
   func _test_compactMap() {
     measure { // Time: 0.018 sec
-      let sourceA: PublishSubject<Int> = .init()
+      let sourceA: PublishSubject<Int, Never> = .init()
       let stage = DisposableStage()
       let shouldNil = Unchecked(false)
       sourceA
@@ -106,8 +106,8 @@ extension Benchmarks {
   func _test_flatMapLatest() {
     measure { // Time: 0.095 sec
       let stage = DisposableStage()
-      let sourceA: PublishSubject<Int> = .init()
-      let sourceB: ValueSubject<Int> = .init(1)
+      let sourceA: PublishSubject<Int, Never> = .init()
+      let sourceB: ValueSubject<Int, Never> = .init(1)
 
       sourceA
         .flatMapLatest { aValue in
@@ -155,8 +155,8 @@ extension Benchmarks {
   func _test_combineLatest() {
     measure { // Time: 0.045 sec
       let stage = DisposableStage()
-      let sourceA: PublishSubject<Int> = .init()
-      let sourceB: ValueSubject<Int> = .init(1)
+      let sourceA: PublishSubject<Int, Never> = .init()
+      let sourceB: ValueSubject<Int, Never> = .init(1)
 
       sourceA
         .combineLatest(sourceB)
@@ -198,8 +198,8 @@ extension Benchmarks {
   func _test_merge() {
     measure { // Time: 0.015 sec
       let stage = DisposableStage()
-      let sourceA: PublishSubject<Int> = .init()
-      let sourceB: ValueSubject<Int> = .init(1)
+      let sourceA: PublishSubject<Int, Never> = .init()
+      let sourceB: ValueSubject<Int, Never> = .init(1)
 
       sourceA
         .merge(sourceB)
@@ -241,7 +241,7 @@ extension Benchmarks {
   func _test_removeDuplicates() {
     measure { // Time: 0.023 sec
       let stage = DisposableStage()
-      let sourceA: PublishSubject<Int> = .init()
+      let sourceA: PublishSubject<Int, Never> = .init()
 
       sourceA
         .removeDuplicates()

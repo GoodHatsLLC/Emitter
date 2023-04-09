@@ -4,7 +4,7 @@ import Foundation
 extension Emitter {
 
   public nonisolated func subscribeMain(
-    value: @escaping @MainActor (_ value: Output) -> Void,
+    value: @escaping @MainActor (_ value: Value) -> Void,
     finished: @escaping @MainActor () -> Void = { },
     failed: @escaping @MainActor (_ error: Error) -> Void = { _ in }
   )
@@ -22,7 +22,7 @@ extension Emitter {
 
 // MARK: - SubscribeMain
 
-private struct SubscribeMain<Value>: Subscriber {
+private struct SubscribeMain<Value, Failure: Error>: Subscriber {
 
   fileprivate init(
     value: @escaping @MainActor (Value) -> Void,
@@ -34,7 +34,7 @@ private struct SubscribeMain<Value>: Subscriber {
     self.failedFunc = failed
   }
 
-  fileprivate func receive(emission: Emission<Value>) {
+  fileprivate func receive(emission: Emission<Value, Failure>) {
     Task { @MainActor in
       switch emission {
       case .value(let value):

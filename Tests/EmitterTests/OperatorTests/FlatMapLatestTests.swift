@@ -16,10 +16,10 @@ final class FlatMapLatestTests: XCTestCase {
 
   func testStream_flatMapLatest() throws {
     var record: [String] = []
-    let sourceA: PublishSubject<Int> = .init()
-    let sourceZ: PublishSubject<Void> = .init()
+    let sourceA: PublishSubject<Int, Never> = .init()
+    let sourceZ: PublishSubject<Void, Never> = .init()
     @Sendable
-    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
+    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String, Never> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
     }
@@ -46,10 +46,10 @@ final class FlatMapLatestTests: XCTestCase {
 
   func testStream_flatMapLatest_value() throws {
     var record: [String] = []
-    let sourceA: ValueSubject<Int> = .init(0)
-    let sourceZ: ValueSubject<Void> = .init(())
+    let sourceA: ValueSubject<Int, Never> = .init(0)
+    let sourceZ: ValueSubject<Void, Never> = .init(())
     @Sendable
-    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String> {
+    func sourceBFunc(input: Int, count _: Int) -> some Emitter<String, Never> {
       sourceZ
         .map { _ in String(repeating: "\(input)", count: 2) }
     }
@@ -76,13 +76,13 @@ final class FlatMapLatestTests: XCTestCase {
 
   func test_dispose_releasesResources_outerPublishSubject() throws {
     var record: [String] = []
-    weak var weakSourceA: PublishSubject<Int>?
-    weak var weakSourceB: ValueSubject<String>?
+    weak var weakSourceA: PublishSubject<Int, Never>?
+    weak var weakSourceB: ValueSubject<String, Never>?
 
     ({
       ({
-        let sourceA: PublishSubject<Int> = .init()
-        let sourceB: ValueSubject<String> = .init("initial")
+        let sourceA: PublishSubject<Int, Never> = .init()
+        let sourceB: ValueSubject<String, Never> = .init("initial")
         weakSourceA = sourceA
         weakSourceB = sourceB
 
@@ -117,13 +117,13 @@ final class FlatMapLatestTests: XCTestCase {
 
   func test_dispose_releasesResources_outerValueSubject() throws {
     var record: [String] = []
-    weak var weakSourceA: ValueSubject<Int>?
-    weak var weakSourceB: PublishSubject<String>?
+    weak var weakSourceA: ValueSubject<Int, Never>?
+    weak var weakSourceB: PublishSubject<String, Never>?
 
     ({
       ({
-        let sourceA: ValueSubject<Int> = .init(0)
-        let sourceB: PublishSubject<String> = .init()
+        let sourceA: ValueSubject<Int, Never> = .init(0)
+        let sourceB: PublishSubject<String, Never> = .init()
         weakSourceA = sourceA
         weakSourceB = sourceB
 

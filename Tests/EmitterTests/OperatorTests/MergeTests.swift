@@ -16,8 +16,8 @@ final class MergeTests: XCTestCase {
 
   func testStream_merge() throws {
     var record: [Int] = []
-    let sourceA: PublishSubject<Int> = .init()
-    let sourceB: PublishSubject<Int> = .init()
+    let sourceA: PublishSubject<Int, Never> = .init()
+    let sourceB: PublishSubject<Int, Never> = .init()
 
     sourceA
       .merge(sourceB)
@@ -40,13 +40,13 @@ final class MergeTests: XCTestCase {
 
   func test_dispose_releasesResources() throws {
     var record: [String] = []
-    weak var weakSourceA: PublishSubject<Int>?
-    weak var weakSourceB: PublishSubject<String>?
+    weak var weakSourceA: PublishSubject<Int, Never>?
+    weak var weakSourceB: PublishSubject<String, Never>?
 
     ({
       ({
-        let sourceA: PublishSubject<Int> = .init()
-        let sourceB: PublishSubject<String> = .init()
+        let sourceA: PublishSubject<Int, Never> = .init()
+        let sourceB: PublishSubject<String, Never> = .init()
         weakSourceA = sourceA
         weakSourceB = sourceB
 

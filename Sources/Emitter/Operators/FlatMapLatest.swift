@@ -1,9 +1,9 @@
 import Disposable
 
 extension Emitter {
-  public func flatMapLatest<NewOutput: Sendable>(
-    producer: @escaping @Sendable (Output) -> some Emitter<NewOutput>
-  ) -> some Emitter<NewOutput> {
+  public func flatMapLatest<NewValue>(
+    producer: @escaping @Sendable (Value) -> some Emitter<NewValue, Failure>
+  ) -> some Emitter<NewValue, Failure> {
     Emitters.FlatMapLatest(upstream: self, producer: producer)
   }
 }
@@ -13,26 +13,29 @@ extension Emitter {
 extension Emitters {
   // MARK: - FlatMapLatest
 
-  public struct FlatMapLatest<Upstream: Emitter, Output: Sendable>: Emitter {
+  public struct FlatMapLatest<Upstream: Emitter, NewValue>: Emitter {
 
     // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
-      producer: @escaping @Sendable (Upstream.Output) -> some Emitter<Output>
-    ) where Upstream.Output == Upstream.Output {
+      producer: @escaping @Sendable (Upstream.Value) -> some Emitter<NewValue, Failure>
+    ) {
       self.producer = { producer($0).erase() }
       self.upstream = upstream
     }
 
     // MARK: Public
 
-    public let producer: @Sendable (Upstream.Output) -> AnyEmitter<Output>
+    public typealias Failure = Upstream.Failure
+    public typealias Value = NewValue
+
+    public let producer: @Sendable (Upstream.Value) -> AnyEmitter<NewValue, Failure>
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Output
+      where S.Value == NewValue, S.Failure == Failure
     {
       upstream.subscribe(
         Sub<S>(
@@ -46,7 +49,7 @@ extension Emitters {
     // MARK: Private
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Output
+      where Downstream.Value == Value, Downstream.Failure == Upstream.Failure
     {
 
       // MARK: Lifecycle
@@ -54,7 +57,7 @@ extension Emitters {
       fileprivate init(
         downstream: Downstream,
         upstream: Upstream,
-        producer: @escaping (Upstream.Output) -> AnyEmitter<Output>
+        producer: @escaping (Upstream.Value) -> AnyEmitter<Value, Failure>
       ) {
         self.downstream = downstream
         self.producer = producer
@@ -63,7 +66,7 @@ extension Emitters {
 
       // MARK: Fileprivate
 
-      fileprivate func receive(emission: Emission<Upstream.Output>) {
+      fileprivate func receive(emission: Emission<Upstream.Value, Failure>) {
         switch emission {
         case .value(let value):
           current?.receive(emission: .finished)
@@ -81,8 +84,12 @@ extension Emitters {
       // MARK: Private
 
       private struct InnerSub<Downstream: Subscriber>: Subscriber
-        where Downstream.Value == Output
+        where Downstream.Failure == Upstream.Failure
       {
+
+        typealias Value = Downstream.Value
+        typealias Failure = Downstream.Failure
+
         fileprivate init(
           downstream: Downstream
         ) {
@@ -91,7 +98,7 @@ extension Emitters {
 
         private let downstream: Downstream
 
-        fileprivate func receive(emission: Emission<Output>) {
+        fileprivate func receive(emission: Emission<Value, Failure>) {
           switch emission {
           case .value(let value):
             downstream.receive(emission: .value(value))
@@ -104,7 +111,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let producer: (Upstream.Output) -> AnyEmitter<Output>
+      private let producer: (Upstream.Value) -> AnyEmitter<Value, Failure>
 
       private let upstream: Upstream
       private var current: InnerSub<Downstream>?

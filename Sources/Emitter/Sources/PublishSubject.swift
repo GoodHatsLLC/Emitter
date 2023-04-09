@@ -3,8 +3,7 @@ import Foundation
 
 // MARK: - PublishSubject
 
-public final class PublishSubject<Value: Sendable>: Emitter, Subject, @unchecked
-Sendable {
+public final class PublishSubject<Value, Failure: Error>: Emitter, Subject {
 
   // MARK: Lifecycle
 
@@ -12,12 +11,12 @@ Sendable {
 
   // MARK: Public
 
-  public typealias Output = Value
+  public typealias Value = Value
 
   // MARK: Private
 
   private let state =
-    Locked<(isActive: Bool, subs: Set<Subscription<Value>>)>((isActive: true, subs: []))
+    Locked<(isActive: Bool, subs: Set<Subscription<Value, Failure>>)>((isActive: true, subs: []))
 }
 
 // MARK: - Source API
@@ -33,13 +32,13 @@ extension PublishSubject {
     emit(.value(value))
   }
 
-  public func fail(_ error: some Error) {
+  public func fail(_ error: Failure) {
     emit(.failed(error))
   }
 
   // MARK: Private
 
-  private func emit(_ emission: Emission<Value>) {
+  private func emit(_ emission: Emission<Value, Failure>) {
     switch emission {
     case .failed,
          .finished:
@@ -69,9 +68,9 @@ extension PublishSubject {
     _ subscriber: S
   )
     -> AutoDisposable
-    where S.Value == Value
+    where S.Value == Value, S.Failure == Failure
   {
-    let subscription = Subscription<Value>(
+    let subscription = Subscription<Value, Failure>(
       subscriber: subscriber
     )
     let didSubscribe = state
@@ -98,3 +97,7 @@ extension PublishSubject {
     }
   }
 }
+
+// MARK: Sendable
+
+extension PublishSubject: Sendable where Value: Sendable { }

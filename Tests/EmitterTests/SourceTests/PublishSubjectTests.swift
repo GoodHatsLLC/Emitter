@@ -16,7 +16,7 @@ final class PublishSubjectTests: XCTestCase {
 
   func testPublishSubject_doesNotPublish_beforeAnySend() throws {
     let record: Unchecked<[String]> = .init([])
-    let source: PublishSubject<String> = .init()
+    let source: PublishSubject<String, Never> = .init()
     source
       .subscribe { value in
         record.value.append(value)
@@ -27,7 +27,7 @@ final class PublishSubjectTests: XCTestCase {
 
   func testPublishSubject_doesNotPublish_toUnstagedSubscription() throws {
     let record: Unchecked<[String]> = .init([])
-    let source: PublishSubject<String> = .init()
+    let source: PublishSubject<String, Never> = .init()
     _ = source
       .subscribe { value in
         record.value.append(value)
@@ -38,7 +38,7 @@ final class PublishSubjectTests: XCTestCase {
 
   func testPublishSubject_doesNotReplaySend() throws {
     let record: Unchecked<[String]> = .init([])
-    let source: PublishSubject<String> = .init()
+    let source: PublishSubject<String, Never> = .init()
     source.emit(value: "some value")
     source
       .subscribe { value in
@@ -51,7 +51,7 @@ final class PublishSubjectTests: XCTestCase {
   func test_emission() throws {
     let record: Unchecked<[String]> = .init([])
 
-    let source: PublishSubject<String> = .init()
+    let source: PublishSubject<String, Never> = .init()
 
     source
       .subscribe { value in
@@ -69,8 +69,8 @@ final class PublishSubjectTests: XCTestCase {
   func test_flatMap() throws {
     let record: Unchecked<[String]> = .init([])
 
-    let sourceA: PublishSubject<Int> = .init()
-    let sourceB: PublishSubject<String> = .init()
+    let sourceA: PublishSubject<Int, Never> = .init()
+    let sourceB: PublishSubject<String, Never> = .init()
 
     sourceA
       .flatMapLatest { value in
@@ -96,7 +96,7 @@ final class PublishSubjectTests: XCTestCase {
 
   func testPublishSubject_publishesInOrder_toSubscription() throws {
     let record: Unchecked<[String]> = .init([])
-    let source: PublishSubject<String> = .init()
+    let source: PublishSubject<String, Never> = .init()
     source
       .subscribe { value in
         record.value.append(value)

@@ -16,7 +16,7 @@ final class FilterTests: XCTestCase {
 
   func testStream_compactMap() throws {
     var record: [String] = []
-    let source = PublishSubject<String>()
+    let source = PublishSubject<String, Never>()
 
     source
       .filter { $0 != "INVALID" }
@@ -38,11 +38,11 @@ final class FilterTests: XCTestCase {
 
   func test_dispose_releasesResources() throws {
     var record: [Int] = []
-    weak var weakSourceA: PublishSubject<Int>?
+    weak var weakSourceA: PublishSubject<Int, Never>?
 
     ({
       ({
-        let sourceA: PublishSubject<Int> = .init()
+        let sourceA: PublishSubject<Int, Never> = .init()
         weakSourceA = sourceA
 
         sourceA

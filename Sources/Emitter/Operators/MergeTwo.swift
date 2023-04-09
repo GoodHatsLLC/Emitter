@@ -2,9 +2,9 @@ import Disposable
 
 extension Emitter {
   public func merge<Other: Emitter>(
-    _ otherB: Other
-  ) -> some Emitter<Output> where Other.Output == Self.Output {
-    Emitters.MergeTwo(upstreamA: erase(), upstreamB: otherB.erase())
+    _ other: Other
+  ) -> some Emitter<Value, Failure> where Other.Value == Value, Other.Failure == Failure {
+    Emitters.MergeTwo(upstreamA: self, upstreamB: other)
   }
 }
 
@@ -13,13 +13,15 @@ extension Emitter {
 extension Emitters {
   // MARK: - Merge
 
-  public struct MergeTwo<Upstream: Emitter>: Emitter where Upstream.Output: Sendable {
+  public struct MergeTwo<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
+    where UpstreamA.Value == UpstreamB.Value, UpstreamA.Failure == UpstreamB.Failure
+  {
 
     // MARK: Lifecycle
 
     public init(
-      upstreamA: Upstream,
-      upstreamB: Upstream
+      upstreamA: UpstreamA,
+      upstreamB: UpstreamB
     ) {
       self.upstreamA = upstreamA
       self.upstreamB = upstreamB
@@ -27,16 +29,17 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Output = Upstream.Output
+    public typealias Value = UpstreamA.Value
+    public typealias Failure = UpstreamA.Failure
 
-    public let upstreamA: Upstream
-    public let upstreamB: Upstream
+    public let upstreamA: UpstreamA
+    public let upstreamB: UpstreamB
 
     public func subscribe<S: Subscriber>(
       _ subscriber: S
     )
       -> AutoDisposable
-      where Output == S.Value
+      where S.Value == Value, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -48,7 +51,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Upstream.Output
+      where Downstream.Value == UpstreamA.Value, Downstream.Failure == UpstreamA.Failure
     {
 
       // MARK: Lifecycle
@@ -57,15 +60,22 @@ extension Emitters {
         self.downstream = downstream
       }
 
+      // MARK: Internal
+
+      typealias Value = Downstream.Value
+      typealias Failure = Downstream.Failure
+
       // MARK: Fileprivate
 
       fileprivate let downstream: Downstream
 
       fileprivate func subscribe(
-        upstreamA: Upstream,
-        upstreamB: Upstream
+        upstreamA: UpstreamA,
+        upstreamB: UpstreamB
       )
-        -> AutoDisposable
+        -> AutoDisposable where
+        UpstreamA.Value == Value, UpstreamA.Failure == Failure,
+        UpstreamB.Value == Value, UpstreamB.Failure == Failure
       {
         let disposableA = upstreamA.subscribe(self)
         let disposableB = upstreamB.subscribe(self)
@@ -77,7 +87,7 @@ extension Emitters {
         return disposable
       }
 
-      fileprivate func receive(emission: Emission<Upstream.Output>) {
+      fileprivate func receive(emission: Emission<Value, Failure>) {
         downstream.receive(emission: emission)
 
         switch emission {
@@ -98,3 +108,7 @@ extension Emitters {
 
   }
 }
+
+// MARK: - Emitters.MergeTwo + Sendable
+
+extension Emitters.MergeTwo: Sendable where UpstreamA: Sendable, UpstreamB: Sendable { }

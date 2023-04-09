@@ -1,18 +1,18 @@
 import Disposable
 
 extension Emitter {
-  public typealias AsyncEmitting<Output> = AsyncThrowingStream<Output, Error>
+  public typealias AsyncEmitting<Value, Failure> = AsyncThrowingStream<Value, Error>
 
-  public var values: AsyncEmitting<Output> {
-    EmitterToAsyncBridge<Output>(self).values
+  public var values: AsyncEmitting<Value, Failure> {
+    EmitterToAsyncBridge<Value, Failure>(self).values
   }
 }
 
 // MARK: - EmitterToAsyncBridge
 
-public struct EmitterToAsyncBridge<Output> {
+public struct EmitterToAsyncBridge<Value, Failure> {
 
-  public init(_ emitter: some Emitter<Output>) {
+  public init(_ emitter: some Emitter<Value, Failure>) {
     self.values = .init { continuation in
 
       let disposable = emitter.subscribe(
@@ -35,5 +35,5 @@ public struct EmitterToAsyncBridge<Output> {
     }
   }
 
-  public let values: AsyncThrowingStream<Output, Error>
+  public let values: AsyncThrowingStream<Value, Error>
 }

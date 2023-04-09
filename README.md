@@ -11,11 +11,8 @@ It is used internally in the [StateTree architecture](https://github.com/GoodHat
 
 ## Limitations
 
-`Emitter` is intended to be simple. It has some limitations:
+`Emitter` is primarily dveloped as an internal library for StateTree.
 * It is neither as well tested nor as performant as the various alternatives.
-* Like `RxSwift` but unlike `Combine` it has no support for back pressure management or typed errors.
+* Like `RxSwift` but unlike `Combine` it has no support for back pressure management.
 * It has a limited number of [implemented operators](https://github.com/GoodHatsLLC/Emitter/tree/main/Sources/Emitter/Operators).
-
-## Operator performance
-
-![Emitter operator performance](https://github.com/GoodHatsLLC/Emitter/blob/main/Benchmarks/chart.png?raw=true)
+* It is pre-v1 and its API will continue to change.
