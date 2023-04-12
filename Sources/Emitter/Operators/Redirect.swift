@@ -3,10 +3,10 @@ import Disposable
 extension Emitter {
   func redirect(
     _ redirection: @escaping @Sendable (
-      _ event: Emission<Value, Failure>,
-      _ downstream: @escaping @Sendable (Emission<Value, Failure>) -> Void
+      _ event: Emission<Output, Failure>,
+      _ downstream: @escaping @Sendable (Emission<Output, Failure>) -> Void
     ) -> Void
-  ) -> some Emitter<Value, Failure> {
+  ) -> some Emitter<Output, Failure> {
     Emitters.Redirect(redirection: redirection, upstream: self)
   }
 }
@@ -22,8 +22,8 @@ extension Emitters {
 
     init(
       redirection: @escaping @Sendable (
-        _ event: Emission<Value, Failure>,
-        _ downstream: @escaping @Sendable (Emission<Value, Failure>) -> Void
+        _ event: Emission<Output, Failure>,
+        _ downstream: @escaping @Sendable (Emission<Output, Failure>) -> Void
       ) -> Void,
       upstream: Upstream
     ) {
@@ -33,13 +33,13 @@ extension Emitters {
 
     // MARK: Internal
 
-    typealias Value = Upstream.Value
+    typealias Output = Upstream.Output
     typealias Failure = Upstream.Failure
 
     let upstream: Upstream
 
     func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       upstream.subscribe(
         Sub<S>(
@@ -52,13 +52,13 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       fileprivate init(
         redirection: @escaping @Sendable (
-          _ event: Emission<Value, Failure>,
-          _ downstream: @escaping @Sendable (Emission<Value, Failure>) -> Void
+          _ event: Emission<Output, Failure>,
+          _ downstream: @escaping @Sendable (Emission<Output, Failure>) -> Void
         ) -> Void,
         downstream: Downstream
       ) {
@@ -66,21 +66,21 @@ extension Emitters {
         self.redirection = redirection
       }
 
-      fileprivate func receive(emission: Emission<Upstream.Value, Upstream.Failure>) {
+      fileprivate func receive(emission: Emission<Upstream.Output, Upstream.Failure>) {
         redirection(emission) { downstream.receive(emission: $0) }
       }
 
       private let downstream: Downstream
       private let redirection: @Sendable (
-        _ event: Emission<Value, Failure>,
-        _ downstream: @escaping @Sendable (Emission<Value, Failure>) -> Void
+        _ event: Emission<Output, Failure>,
+        _ downstream: @escaping @Sendable (Emission<Output, Failure>) -> Void
       ) -> Void
 
     }
 
     private let redirection: @Sendable (
-      _ event: Emission<Value, Failure>,
-      _ downstream: @escaping @Sendable (Emission<Value, Failure>) -> Void
+      _ event: Emission<Output, Failure>,
+      _ downstream: @escaping @Sendable (Emission<Output, Failure>) -> Void
     ) -> Void
 
   }

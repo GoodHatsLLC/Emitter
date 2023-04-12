@@ -1,7 +1,7 @@
 import Disposable
 
 extension Emitter {
-  public var firstValue: Value? {
+  public var firstValue: Output? {
     get async {
       let sub = Emitters.FirstValue(upstream: self)
       return await sub.asyncValue.value
@@ -25,9 +25,9 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = Upstream.Value
+    public typealias Output = Upstream.Output
 
-    public func receive(emission: Emission<Upstream.Value, Upstream.Failure>) {
+    public func receive(emission: Emission<Upstream.Output, Upstream.Failure>) {
       let wasFirst = isFirst.withLock { isFirst in
         if isFirst {
           isFirst.toggle()
@@ -51,7 +51,7 @@ extension Emitters {
 
     // MARK: Internal
 
-    let asyncValue = AsyncValue<Upstream.Value?>()
+    let asyncValue = AsyncValue<Upstream.Output?>()
 
     // MARK: Private
 

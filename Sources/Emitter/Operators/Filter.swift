@@ -2,8 +2,8 @@ import Disposable
 
 extension Emitter {
   public func filter(
-    _ evaluator: @escaping @Sendable (Value) -> Bool
-  ) -> some Emitter<Value, Failure> {
+    _ evaluator: @escaping @Sendable (Output) -> Bool
+  ) -> some Emitter<Output, Failure> {
     Emitters.Filter(upstream: self, evaluator: evaluator)
   }
 }
@@ -19,23 +19,23 @@ extension Emitters {
 
     public init(
       upstream: Upstream,
-      evaluator: @escaping @Sendable (Value) -> Bool
-    ) where Upstream.Value == Value {
+      evaluator: @escaping @Sendable (Output) -> Bool
+    ) where Upstream.Output == Output {
       self.evaluator = evaluator
       self.upstream = upstream
     }
 
     // MARK: Public
 
-    public typealias Value = Upstream.Value
+    public typealias Output = Upstream.Output
     public typealias Failure = Upstream.Failure
 
-    public let evaluator: @Sendable (Value) -> Bool
+    public let evaluator: @Sendable (Output) -> Bool
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       upstream.subscribe(Sub<S>(downstream: subscriber, evaluator: evaluator))
     }
@@ -43,15 +43,15 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
-      fileprivate init(downstream: Downstream, evaluator: @escaping (Value) -> Bool) {
+      fileprivate init(downstream: Downstream, evaluator: @escaping (Output) -> Bool) {
         self.downstream = downstream
         self.evaluator = evaluator
       }
 
-      fileprivate func receive(emission: Emission<Value, Failure>) {
-        let newEmission: Emission<Value, Failure>?
+      fileprivate func receive(emission: Emission<Output, Failure>) {
+        let newEmission: Emission<Output, Failure>?
         switch emission {
         case .value(let value):
           if evaluator(value) {
@@ -68,7 +68,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let evaluator: (Value)
+      private let evaluator: (Output)
         -> Bool
     }
   }

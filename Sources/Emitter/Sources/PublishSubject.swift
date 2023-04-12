@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - PublishSubject
 
-public final class PublishSubject<Value, Failure: Error>: Emitter, Subject {
+public final class PublishSubject<Output, Failure: Error>: Emitter, Subject {
 
   // MARK: Lifecycle
 
@@ -11,12 +11,12 @@ public final class PublishSubject<Value, Failure: Error>: Emitter, Subject {
 
   // MARK: Public
 
-  public typealias Value = Value
+  public typealias Output = Output
 
   // MARK: Private
 
   private let state =
-    Locked<(isActive: Bool, subs: Set<Subscription<Value, Failure>>)>((isActive: true, subs: []))
+    Locked<(isActive: Bool, subs: Set<Subscription<Output, Failure>>)>((isActive: true, subs: []))
 }
 
 // MARK: - Source API
@@ -28,7 +28,7 @@ extension PublishSubject {
     emit(.finished)
   }
 
-  public func emit(value: Value) {
+  public func emit(value: Output) {
     emit(.value(value))
   }
 
@@ -38,7 +38,7 @@ extension PublishSubject {
 
   // MARK: Private
 
-  private func emit(_ emission: Emission<Value, Failure>) {
+  private func emit(_ emission: Emission<Output, Failure>) {
     switch emission {
     case .failed,
          .finished:
@@ -68,9 +68,9 @@ extension PublishSubject {
     _ subscriber: S
   )
     -> AutoDisposable
-    where S.Input == Value, S.Failure == Failure
+    where S.Input == Output, S.Failure == Failure
   {
-    let subscription = Subscription<Value, Failure>(
+    let subscription = Subscription<Output, Failure>(
       subscriber: subscriber
     )
     let didSubscribe = state
@@ -100,4 +100,4 @@ extension PublishSubject {
 
 // MARK: Sendable
 
-extension PublishSubject: Sendable where Value: Sendable { }
+extension PublishSubject: Sendable where Input: Sendable { }

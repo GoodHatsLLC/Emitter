@@ -13,7 +13,7 @@ public struct AsyncToEmitterBridge<Seq: AsyncSequence>: Emitter, @unchecked Send
 
   // MARK: Lifecycle
 
-  public init(_ sequence: Seq) where Value == Seq.Element {
+  public init(_ sequence: Seq) where Output == Seq.Element {
     self.seq = sequence
   }
 
@@ -21,14 +21,14 @@ public struct AsyncToEmitterBridge<Seq: AsyncSequence>: Emitter, @unchecked Send
 
   public typealias Failure = Error
 
-  public typealias Value = Seq.Element
+  public typealias Output = Seq.Element
 
   public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
     where Seq.Element == S.Input, S.Failure == Error
   {
     let stage = DisposableStage()
     Emitters
-      .create(Emission<Value, Error>.self) { emit in
+      .create(Emission<Output, Error>.self) { emit in
         ErasedDisposable(Task {
           do {
             for try await value in seq {

@@ -1,11 +1,11 @@
 // MARK: - Emission
 
-public enum Emission<Value, Failure: Error> {
-  case value(Value)
+public enum Emission<Output, Failure: Error> {
+  case value(Output)
   case finished
   case failed(Failure)
 }
 
 // MARK: Sendable
 
-extension Emission: Sendable where Value: Sendable, Failure: Sendable { }
+extension Emission: Sendable where Output: Sendable, Failure: Sendable { }

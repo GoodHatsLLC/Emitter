@@ -1,11 +1,11 @@
 import Disposable
 
 extension Emitter {
-  public func withSuffix(_ prefix: Value...) -> some Emitter<Value, Failure> {
+  public func withSuffix(_ prefix: Output...) -> some Emitter<Output, Failure> {
     Emitters.WithSuffix(upstream: self, suffixValues: prefix)
   }
 
-  public func withSuffix(_ prefix: [Value]) -> some Emitter<Value, Failure> {
+  public func withSuffix(_ prefix: [Output]) -> some Emitter<Output, Failure> {
     Emitters.WithSuffix(upstream: self, suffixValues: prefix)
   }
 }
@@ -21,7 +21,7 @@ extension Emitters {
 
     public init(
       upstream: Upstream,
-      suffixValues: [Value]
+      suffixValues: [Output]
     ) {
       self.upstream = upstream
       self.suffixValues = suffixValues
@@ -29,12 +29,12 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = Upstream.Value
+    public typealias Output = Upstream.Output
     public typealias Failure = Upstream.Failure
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       return upstream.subscribe(
         Sub<S>(
@@ -47,14 +47,14 @@ extension Emitters {
     // MARK: Private
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
 
       public init(
         downstream: Downstream,
-        suffixValues: [Value]
+        suffixValues: [Output]
       ) {
         self.downstream = downstream
         self.suffixValues = suffixValues
@@ -62,7 +62,7 @@ extension Emitters {
 
       // MARK: Public
 
-      public func receive(emission: Emission<Upstream.Value, Upstream.Failure>) {
+      public func receive(emission: Emission<Upstream.Output, Upstream.Failure>) {
         switch emission {
         case .value:
           downstream.receive(emission: emission)
@@ -79,10 +79,10 @@ extension Emitters {
       // MARK: Private
 
       private let downstream: Downstream
-      private let suffixValues: [Value]
+      private let suffixValues: [Output]
     }
 
     private let upstream: Upstream
-    private let suffixValues: [Value]
+    private let suffixValues: [Output]
   }
 }

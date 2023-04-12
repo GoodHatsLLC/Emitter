@@ -1,9 +1,9 @@
 import Disposable
 
 extension Emitter {
-  public func map<TransformedValue>(
-    _ transformer: @escaping @Sendable (Value) -> TransformedValue
-  ) -> some Emitter<TransformedValue, Failure> {
+  public func map<TransformedOutput>(
+    _ transformer: @escaping @Sendable (Output) -> TransformedOutput
+  ) -> some Emitter<TransformedOutput, Failure> {
     Emitters.Map(upstream: self, transformer: transformer)
   }
 }
@@ -13,13 +13,13 @@ extension Emitter {
 extension Emitters {
   // MARK: - Map
 
-  public struct Map<Upstream: Emitter, TransformedValue>: Emitter {
+  public struct Map<Upstream: Emitter, TransformedOutput>: Emitter {
 
     // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
-      transformer: @escaping @Sendable (Upstream.Value) -> TransformedValue
+      transformer: @escaping @Sendable (Upstream.Output) -> TransformedOutput
     ) {
       self.transformer = transformer
       self.upstream = upstream
@@ -27,14 +27,14 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = TransformedValue
+    public typealias Output = TransformedOutput
     public typealias Failure = Upstream.Failure
 
-    public let transformer: @Sendable (Upstream.Value) -> Value
+    public let transformer: @Sendable (Upstream.Output) -> Output
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       upstream.subscribe(
         Sub<S>(
@@ -47,22 +47,22 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where  Downstream.Input == TransformedValue, Downstream.Failure == Upstream.Failure
+      where Downstream.Input == TransformedOutput, Downstream.Failure == Upstream.Failure
     {
 
-      typealias Value = Upstream.Value
+      typealias Output = Upstream.Output
       typealias Failure = Upstream.Failure
 
       fileprivate init(
         downstream: Downstream,
-        transformer: @escaping (Upstream.Value) -> TransformedValue
+        transformer: @escaping (Upstream.Output) -> TransformedOutput
       ) {
         self.downstream = downstream
         self.transformer = transformer
       }
 
-      fileprivate func receive(emission: Emission<Value, Failure>) {
-        let newEmission: Emission<TransformedValue, Failure>
+      fileprivate func receive(emission: Emission<Output, Failure>) {
+        let newEmission: Emission<TransformedOutput, Failure>
         switch emission {
         case .value(let value):
           newEmission = .value(transformer(value))
@@ -75,7 +75,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let transformer: (Upstream.Value) -> TransformedValue
+      private let transformer: (Upstream.Output) -> TransformedOutput
 
     }
 

@@ -31,7 +31,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
 
   // MARK: Public
 
-  public typealias Value = Upstream.Output
+  public typealias Output = Upstream.Output
   public typealias Failure = Upstream.Failure
 
   public let upstream: Upstream
@@ -47,7 +47,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
   // MARK: Private
 
   private final class Sub<Downstream: Subscriber, Failure: Error>: Combine.Subscriber, Disposable
-    where Downstream.Input == Value, Downstream.Failure == Failure
+    where Downstream.Input == Output, Downstream.Failure == Failure
   {
 
     // MARK: Lifecycle

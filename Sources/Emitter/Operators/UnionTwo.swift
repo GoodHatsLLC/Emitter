@@ -3,7 +3,7 @@ import Disposable
 extension Emitter {
   public func union<UpstreamB: Emitter>(
     _ otherB: UpstreamB
-  ) -> some Emitter<Union2<Value, UpstreamB.Value>, Failure> where Failure == UpstreamB.Failure {
+  ) -> some Emitter<Union2<Output, UpstreamB.Output>, Failure> where Failure == UpstreamB.Failure {
     Emitters.UnionTwo(upstreamA: self, upstreamB: otherB)
   }
 }
@@ -28,7 +28,7 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = Union2<UpstreamA.Value, UpstreamB.Value>
+    public typealias Output = Union2<UpstreamA.Output, UpstreamB.Output>
     public typealias Failure = UpstreamA.Failure
 
     public let upstreamA: UpstreamA
@@ -38,7 +38,7 @@ extension Emitters {
       _ subscriber: S
     )
       -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -50,7 +50,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -71,14 +71,14 @@ extension Emitters {
       {
         let disposableA = upstreamA
           .subscribe(
-            Proxy<UpstreamA.Value, UpstreamA.Failure, IntermediateSub>(
+            Proxy<UpstreamA.Output, UpstreamA.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union2.a
             )
           )
         let disposableB = upstreamB
           .subscribe(
-            Proxy<UpstreamB.Value, UpstreamB.Failure, IntermediateSub>(
+            Proxy<UpstreamB.Output, UpstreamB.Failure, IntermediateSub>(
               downstream: self,
               joinInit: Union2.b
             )
@@ -91,7 +91,7 @@ extension Emitters {
         return disposable
       }
 
-      fileprivate func receive(emission: Emission<Value, Failure>) {
+      fileprivate func receive(emission: Emission<Output, Failure>) {
         downstream.receive(emission: emission)
 
         switch emission {
@@ -114,19 +114,19 @@ extension Emitters {
       where Downstream.Failure == UpstreamFailure
     {
 
-      public typealias Value = UpstreamValue
+      public typealias Output = UpstreamValue
       public typealias Failure = Downstream.Failure
 
       fileprivate init(
         downstream: Downstream,
-        joinInit: @escaping (UpstreamValue) ->  Downstream.Input
+        joinInit: @escaping (UpstreamValue) -> Downstream.Input
       ) {
         self.downstream = downstream
         self.joinInit = joinInit
       }
 
       fileprivate func receive(emission: Emission<UpstreamValue, Failure>) {
-        let forwarded: Emission< Downstream.Input, Failure>
+        let forwarded: Emission<Downstream.Input, Failure>
         switch emission {
         case .value(let value):
           forwarded = .value(joinInit(value))
@@ -139,7 +139,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let joinInit: (UpstreamValue) ->  Downstream.Input
+      private let joinInit: (UpstreamValue) -> Downstream.Input
 
     }
 

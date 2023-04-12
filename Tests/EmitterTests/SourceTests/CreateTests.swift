@@ -84,7 +84,7 @@ final class CreateTests: XCTestCase {
 
       } finished: {
         XCTFail()
-      } failed: { error in
+      } failed: { _ in
         didFail = true
       }
       .stage(on: stage)

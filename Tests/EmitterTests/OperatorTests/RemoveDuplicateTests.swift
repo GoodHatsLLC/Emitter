@@ -6,6 +6,19 @@ import XCTest
 
 final class RemoveDuplicatesTests: XCTestCase {
 
+  class CharObj {
+
+    // MARK: Lifecycle
+
+    init(_ char: String) {
+      self.char = char
+    }
+
+    // MARK: Internal
+
+    let char: String
+  }
+
   let stage = DisposableStage()
 
   override func setUp() { }
@@ -14,7 +27,7 @@ final class RemoveDuplicatesTests: XCTestCase {
     stage.reset()
   }
 
-  func testStream_removeDuplicates() {
+  func testStream_removeDuplicates_equatable() {
     let record: Unchecked<[String]> = .init([])
     let source = PublishSubject<String, Never>()
 
@@ -34,6 +47,50 @@ final class RemoveDuplicatesTests: XCTestCase {
     }
 
     XCTAssertEqual(["a", "d", "e"], record.value)
+  }
+
+  func testStream_removeDuplicates_byFilter() {
+    let record: Unchecked<[String]> = .init([])
+    let source = PublishSubject<String, Never>()
+
+    source
+      .removeDuplicates(by: { $0.lowercased() == $1.lowercased() })
+      .subscribe { output in
+        record.value.append(output)
+      }
+      .stage(on: stage)
+
+    let entries: [String] = ["a", "A", "D", "d", "ƀ", "b", "🫵", "B", "😀"]
+
+    for entry in entries {
+      source.emit(value: entry)
+    }
+
+    XCTAssertEqual(["a", "D", "ƀ", "b", "🫵", "B", "😀"], record.value)
+  }
+
+  func testStream_removeDuplicates_nonEquatable() {
+    let record: Unchecked<[String]> = .init([])
+    let source = PublishSubject<CharObj, Never>()
+
+    source
+      .removeDuplicates(by: { $0.char == $1.char })
+      .map(\.char)
+      .subscribe { output in
+        record.value.append(output)
+      }
+      .stage(on: stage)
+
+    let entries = ["a", "a", "d", "d", "1", "2", "3"]
+      .map { CharObj($0) }
+
+    XCTAssertNil(entries.first as? any Equatable)
+
+    for entry in entries {
+      source.emit(value: entry)
+    }
+
+    XCTAssertEqual(["a", "d", "1", "2", "3"], record.value)
   }
 
   func test_dispose_releasesResources() throws {

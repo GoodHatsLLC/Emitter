@@ -4,7 +4,7 @@ import Foundation
 extension Emitter where Failure == Never {
 
   public nonisolated func subscribe(
-    value: @escaping (_ value: Value) -> Void,
+    value: @escaping (_ value: Output) -> Void,
     finished: @escaping () -> Void = { }
   )
     -> AutoDisposable
@@ -21,7 +21,7 @@ extension Emitter where Failure == Never {
 extension Emitter {
 
   public nonisolated func subscribe(
-    value: @escaping (_ value: Value) -> Void,
+    value: @escaping (_ value: Output) -> Void,
     finished: @escaping () -> Void = { },
     failed: @escaping (_ error: Failure) -> Void = { _ in }
   )
@@ -39,10 +39,10 @@ extension Emitter {
 
 // MARK: - Subscribe
 
-private struct Subscribe<Value, Failure: Error>: Subscriber {
+private struct Subscribe<Output, Failure: Error>: Subscriber {
 
   fileprivate init(
-    value: @escaping (Value) -> Void,
+    value: @escaping (Output) -> Void,
     finished: (() -> Void)?,
     failed: ((Failure) -> Void)?
   ) {
@@ -51,7 +51,7 @@ private struct Subscribe<Value, Failure: Error>: Subscriber {
     self.failedFunc = failed
   }
 
-  fileprivate func receive(emission: Emission<Value, Failure>) {
+  fileprivate func receive(emission: Emission<Output, Failure>) {
     switch emission {
     case .value(let value):
       valueFunc(value)
@@ -62,24 +62,25 @@ private struct Subscribe<Value, Failure: Error>: Subscriber {
     }
   }
 
-  private let valueFunc: (Value) -> Void
+  private let valueFunc: (Output) -> Void
   private let finishedFunc: (() -> Void)?
   private let failedFunc: ((Failure) -> Void)?
 
 }
 
+// MARK: - DriverSubscribe
 
-private struct DriverSubscribe<Value>: Subscriber {
+private struct DriverSubscribe<Output>: Subscriber {
 
   fileprivate init(
-    value: @escaping (Value) -> Void,
+    value: @escaping (Output) -> Void,
     finished: (() -> Void)?
   ) {
     self.valueFunc = value
     self.finishedFunc = finished
   }
 
-  fileprivate func receive(emission: Emission<Value, Never>) {
+  fileprivate func receive(emission: Emission<Output, Never>) {
     switch emission {
     case .value(let value):
       valueFunc(value)
@@ -88,7 +89,7 @@ private struct DriverSubscribe<Value>: Subscriber {
     }
   }
 
-  private let valueFunc: (Value) -> Void
+  private let valueFunc: (Output) -> Void
   private let finishedFunc: (() -> Void)?
 
 }

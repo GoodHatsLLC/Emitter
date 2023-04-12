@@ -2,7 +2,7 @@
 import Combine
 
 extension Emitter {
-  public func asCombinePublisher() -> some Publisher<Value, Failure> {
+  public func asCombinePublisher() -> some Publisher<Output, Failure> {
     EmitterToCombineBridge(upstream: self)
   }
 }
@@ -21,13 +21,13 @@ public struct EmitterToCombineBridge<Upstream: Emitter>: Combine.Publisher {
 
   // MARK: Public
 
-  public typealias Output = Upstream.Value
+  public typealias Output = Upstream.Output
   public typealias Failure = Upstream.Failure
 
   public let upstream: Upstream
 
   public func receive<S>(subscriber: S) where S: Combine.Subscriber, Failure == S.Failure,
-    Upstream.Value == S.Input
+    Upstream.Output == S.Input
   {
     let subscriber = Sub(downstream: subscriber)
     let disposable = upstream.subscribe(subscriber)
@@ -46,10 +46,10 @@ public struct EmitterToCombineBridge<Upstream: Emitter>: Combine.Publisher {
   }
 
   struct Sub<Downstream: Combine.Subscriber>: Subscriber
-    where Downstream.Input == Upstream.Value, Downstream.Failure == Upstream.Failure
+    where Downstream.Input == Upstream.Output, Downstream.Failure == Upstream.Failure
   {
     typealias Failure = Upstream.Failure
-    typealias Value = Upstream.Value
+    typealias Output = Upstream.Output
 
     func receive(emission: Emission<Downstream.Input, Upstream.Failure>) {
       switch emission {

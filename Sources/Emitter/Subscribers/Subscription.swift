@@ -2,25 +2,25 @@ import Disposable
 
 // MARK: - Subscription
 
-final class Subscription<Value, Failure: Error>: Sendable, Hashable {
+final class Subscription<Output, Failure: Error>: Sendable, Hashable {
 
   // MARK: Lifecycle
 
   init<Sub: Subscriber>(
     subscriber: Sub
-  ) where Value == Sub.Input, Failure == Sub.Failure {
+  ) where Output == Sub.Input, Failure == Sub.Failure {
     self.subscriberReceiver = { emission in subscriber.receive(emission: emission) }
   }
 
   // MARK: Internal
 
-  func receive(emission: Emission<Value, Failure>) {
+  func receive(emission: Emission<Output, Failure>) {
     subscriberReceiver(emission)
   }
 
   // MARK: Private
 
-  private let subscriberReceiver: @Sendable (Emission<Value, Failure>) -> Void
+  private let subscriberReceiver: @Sendable (Emission<Output, Failure>) -> Void
 
 }
 

@@ -3,21 +3,25 @@ import Foundation
 
 // MARK: - ValueSubject
 
-public final class ValueSubject<Value, Failure: Error>: Emitter, Subject {
+public final class ValueSubject<Output, Failure: Error>: Emitter, Subject {
 
   // MARK: Lifecycle
 
-  public init(_ value: Value) {
+  public init(_ value: Output) {
     self.state = Locked((isActive: true, value: value, subs: []))
   }
 
   // MARK: Public
 
-  public typealias Value = Value
+  public typealias Output = Output
 
   // MARK: Private
 
-  private let state: Locked<(isActive: Bool, value: Value, subs: Set<Subscription<Value, Failure>>)>
+  private let state: Locked<(
+    isActive: Bool,
+    value: Output,
+    subs: Set<Subscription<Output, Failure>>
+  )>
 }
 
 // MARK: - Source API
@@ -25,7 +29,7 @@ extension ValueSubject {
 
   // MARK: Public
 
-  public var value: Value {
+  public var value: Output {
     get {
       state.withLock { state in
         state.value
@@ -40,7 +44,7 @@ extension ValueSubject {
     emit(.finished)
   }
 
-  public func emit(value: Value) {
+  public func emit(value: Output) {
     emit(.value(value))
   }
 
@@ -50,7 +54,7 @@ extension ValueSubject {
 
   // MARK: Private
 
-  private func emit(_ emission: Emission<Value, Failure>) {
+  private func emit(_ emission: Emission<Output, Failure>) {
     switch emission {
     case .failed,
          .finished:
@@ -64,7 +68,7 @@ extension ValueSubject {
         sub.receive(emission: emission)
       }
     case .value(let value):
-      let subs: [Subscription<Value, Failure>] = state.withLock { state in
+      let subs: [Subscription<Output, Failure>] = state.withLock { state in
         guard state.isActive
         else {
           return []
@@ -85,9 +89,9 @@ extension ValueSubject {
     _ subscriber: S
   )
     -> AutoDisposable
-    where S.Input == Value, S.Failure == Failure
+    where S.Input == Output, S.Failure == Failure
   {
-    let subscription = Subscription<Value, Failure>(
+    let subscription = Subscription<Output, Failure>(
       subscriber: subscriber
     )
     let (didSubscribe, value) = state
@@ -118,4 +122,4 @@ extension ValueSubject {
 
 // MARK: Sendable
 
-extension ValueSubject: Sendable where Value: Sendable { }
+extension ValueSubject: Sendable where Output: Sendable { }

@@ -3,7 +3,7 @@ import Disposable
 extension Emitter {
   public func combineLatest<Other: Emitter>(
     _ other: Other
-  ) -> some Emitter<Tuple.Size2<Value, Other.Value>, Failure> where Other.Failure == Failure {
+  ) -> some Emitter<Tuple.Size2<Output, Other.Output>, Failure> where Other.Failure == Failure {
     Emitters.CombineLatest(upstreamA: self, upstreamB: other)
   }
 }
@@ -13,11 +13,10 @@ extension Emitter {
 extension Emitters {
 
   public struct CombineLatest<
-    UpstreamA: Emitter & Sendable,
-    UpstreamB: Emitter & Sendable,
+    UpstreamA: Emitter,
+    UpstreamB: Emitter,
     Failure: Error
-  >: Emitter,
-    Sendable
+  >: Emitter
     where UpstreamA.Failure == Failure,
     UpstreamB.Failure == Failure
   {
@@ -34,12 +33,12 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias ValueA = UpstreamA.Value
-    public typealias ValueB = UpstreamB.Value
-    public typealias Value = Tuple.Size2<ValueA, ValueB>
+    public typealias OutputA = UpstreamA.Output
+    public typealias OutputB = UpstreamB.Output
+    public typealias Output = Tuple.Size2<OutputA, OutputB>
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AutoDisposable where S.Input == Value, S.Failure == Failure
+      -> AutoDisposable where S.Input == Output, S.Failure == Failure
     {
       let stage = DisposableStage()
       let sub = Sub(downstream: subscriber)
@@ -58,12 +57,12 @@ extension Emitters {
     // MARK: Private
 
     private enum JoinSubInput {
-      case a(ValueA)
-      case b(ValueB)
+      case a(OutputA)
+      case b(OutputB)
     }
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -100,8 +99,8 @@ extension Emitters {
 
       private let downstream: Downstream
 
-      private var lastA: ValueA?
-      private var lastB: ValueB?
+      private var lastA: OutputA?
+      private var lastB: OutputB?
 
     }
 

@@ -1,11 +1,11 @@
 import Disposable
 
 extension Emitter {
-  public func first() -> some Emitter<Value, Failure> {
+  public func first() -> some Emitter<Output, Failure> {
     Emitters.First(upstream: self, count: 1)
   }
 
-  public func first(_ count: Int) -> some Emitter<Value, Failure> {
+  public func first(_ count: Int) -> some Emitter<Output, Failure> {
     Emitters.First(upstream: self, count: count)
   }
 }
@@ -29,12 +29,12 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = Upstream.Value
+    public typealias Output = Upstream.Output
     public typealias Failure = Upstream.Failure
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       return upstream.subscribe(
         Sub<S>(
@@ -47,7 +47,7 @@ extension Emitters {
     // MARK: Private
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -62,7 +62,7 @@ extension Emitters {
 
       // MARK: Public
 
-      public func receive(emission: Emission<Upstream.Value, Upstream.Failure>) {
+      public func receive(emission: Emission<Upstream.Output, Upstream.Failure>) {
         let shouldReceive = remaining.withLock { remaining in
           if remaining > 0 {
             remaining -= 1

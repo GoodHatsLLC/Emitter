@@ -6,6 +6,14 @@ import XCTest
 
 final class WithFailureTypeTests: XCTestCase {
 
+  struct FailureType: Error { }
+
+  enum Emissions<V, F: Error> {
+    case value(String)
+    case finished
+    case failure
+  }
+
   let stage = DisposableStage()
 
   override func setUp() { }
@@ -14,16 +22,7 @@ final class WithFailureTypeTests: XCTestCase {
     stage.reset()
   }
 
-  struct FailureType: Error {}
-
-  enum Emissions<V, F: Error> {
-    case value(String)
-    case finished
-    case failure
-  }
-
   func test_failureType_fromNever() throws {
-
     var emissions: [Emissions<String, FailureType>] = []
 
     let source = PublishSubject<String, Never>()
@@ -33,7 +32,7 @@ final class WithFailureTypeTests: XCTestCase {
         emissions.append(.value(value))
       } finished: {
         emissions.append(.finished)
-      } failed: { error in
+      } failed: { _ in
         emissions.append(.failure)
       }
       .stage(on: stage)
@@ -55,7 +54,6 @@ final class WithFailureTypeTests: XCTestCase {
     }.joined(separator: " ")
 
     XCTAssertEqual(joined, "hi . how are you ?")
-    
   }
 
 }

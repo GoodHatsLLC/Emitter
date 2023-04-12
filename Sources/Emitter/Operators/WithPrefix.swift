@@ -1,11 +1,11 @@
 import Disposable
 
 extension Emitter {
-  public func withPrefix(_ prefix: Value...) -> some Emitter<Value, Failure> {
+  public func withPrefix(_ prefix: Output...) -> some Emitter<Output, Failure> {
     Emitters.WithPrefix(upstream: self, prefixValues: prefix)
   }
 
-  public func withPrefix(_ prefix: [Value]) -> some Emitter<Value, Failure> {
+  public func withPrefix(_ prefix: [Output]) -> some Emitter<Output, Failure> {
     Emitters.WithPrefix(upstream: self, prefixValues: prefix)
   }
 }
@@ -17,14 +17,14 @@ extension Emitters {
 
   public struct WithPrefix<Upstream: Emitter>: Emitter {
 
-    public typealias Value = Upstream.Value
+    public typealias Output = Upstream.Output
     public typealias Failure = Upstream.Failure
 
     // MARK: Lifecycle
 
     public init(
       upstream: Upstream,
-      prefixValues: [Value]
+      prefixValues: [Output]
     ) {
       self.upstream = upstream
       self.prefixValues = prefixValues
@@ -34,7 +34,7 @@ extension Emitters {
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       for value in prefixValues {
         subscriber.receive(emission: .value(value))
@@ -43,6 +43,6 @@ extension Emitters {
     }
 
     private let upstream: Upstream
-    private let prefixValues: [Value]
+    private let prefixValues: [Output]
   }
 }

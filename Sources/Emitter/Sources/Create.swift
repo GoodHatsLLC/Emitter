@@ -2,14 +2,14 @@ import Disposable
 import Foundation
 
 extension Emitters {
-  public static func create<Value, Failure: Error>(
-    _: Emission<Value, Failure>.Type,
+  public static func create<Output, Failure: Error>(
+    _: Emission<Output, Failure>.Type,
     _ creator: @escaping @Sendable (
-      _ emit: @escaping @Sendable (Emission<Value, Failure>)
+      _ emit: @escaping @Sendable (Emission<Output, Failure>)
         -> Void
     ) async
       -> Void
-  ) -> some Emitter<Value, Failure> {
+  ) -> some Emitter<Output, Failure> {
     Emitters.Create(with: creator)
   }
 }
@@ -19,13 +19,13 @@ extension Emitters {
 extension Emitters {
   // MARK: - Create
 
-  private final class Create<Value, Failure: Error>: Emitter, @unchecked Sendable {
+  private final class Create<Output, Failure: Error>: Emitter, @unchecked Sendable {
 
     // MARK: Lifecycle
 
     fileprivate init(
       with creator: @escaping @Sendable (
-        _ source: @escaping @Sendable (Emission<Value, Failure>)
+        _ source: @escaping @Sendable (Emission<Output, Failure>)
           -> Void
       ) async -> Void
     ) {
@@ -35,9 +35,9 @@ extension Emitters {
     // MARK: Fileprivate
 
     fileprivate func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
-      let subscription = Subscription<Value, Failure>(
+      let subscription = Subscription<Output, Failure>(
         subscriber: subscriber
       )
       let didSubscribe = subscriptions
@@ -81,7 +81,7 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       fileprivate init(
@@ -90,7 +90,7 @@ extension Emitters {
         self.downstream = downstream
       }
 
-      fileprivate func receive(emission: Emission<Value, Failure>) {
+      fileprivate func receive(emission: Emission<Output, Failure>) {
         downstream.receive(emission: emission)
       }
 
@@ -98,13 +98,13 @@ extension Emitters {
     }
 
     private var creator: (@Sendable (
-      _ source: @escaping @Sendable (Emission<Value, Failure>)
+      _ source: @escaping @Sendable (Emission<Output, Failure>)
         -> Void
     ) async -> Void)?
-    private var subscriptions = Locked<Set<Subscription<Value, Failure>>>([])
+    private var subscriptions = Locked<Set<Subscription<Output, Failure>>>([])
     private var disposable: AutoDisposable?
 
-    private func downstreamEmit(_ emission: Emission<Value, Failure>) {
+    private func downstreamEmit(_ emission: Emission<Output, Failure>) {
       let subs = subscriptions.withLock { $0 }
       for sub in subs {
         sub.receive(emission: emission)

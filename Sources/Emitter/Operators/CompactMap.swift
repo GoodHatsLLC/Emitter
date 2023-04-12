@@ -2,13 +2,13 @@ import Disposable
 
 extension Emitter {
   public func compact<Unwrapped: Sendable>() -> some Emitter<Unwrapped, Failure>
-    where Self.Value == Unwrapped?
+    where Self.Output == Unwrapped?
   {
     Emitters.Compact<Self, Unwrapped>(upstream: self)
   }
 
   public func compactMap<T>(
-    transformer: @escaping @Sendable (Value) -> T?
+    transformer: @escaping @Sendable (Output) -> T?
   ) -> some Emitter<T, Failure> {
     map(transformer)
       .compact()
@@ -20,7 +20,7 @@ extension Emitter {
 extension Emitters {
   // MARK: - CompactMap
 
-  public struct Compact<Upstream: Emitter, Unwrapped>: Emitter where Upstream.Value == Unwrapped? {
+  public struct Compact<Upstream: Emitter, Unwrapped>: Emitter where Upstream.Output == Unwrapped? {
 
     // MARK: Lifecycle
 
@@ -32,7 +32,7 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = Unwrapped
+    public typealias Output = Unwrapped
     public typealias Failure = Upstream.Failure
 
     public let upstream: Upstream
@@ -46,11 +46,11 @@ extension Emitters {
 
     // MARK: Private
 
-    private struct Sub<Downstream: Subscriber>: Subscriber where  Downstream.Input == Unwrapped,
+    private struct Sub<Downstream: Subscriber>: Subscriber where Downstream.Input == Unwrapped,
       Downstream.Failure == Failure
     {
 
-      typealias Value = Upstream.Value
+      typealias Output = Upstream.Output
       typealias Failure = Upstream.Failure
 
       fileprivate init(
@@ -59,7 +59,7 @@ extension Emitters {
         self.downstream = downstream
       }
 
-      fileprivate func receive(emission: Emission<Value, Failure>) {
+      fileprivate func receive(emission: Emission<Output, Failure>) {
         switch emission {
         case .value(let value):
           if let value {

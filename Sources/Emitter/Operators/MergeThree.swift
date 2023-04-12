@@ -4,7 +4,7 @@ extension Emitter {
   public func merge<OtherB: Emitter, OtherC: Emitter>(
     _ otherB: OtherB,
     _ otherC: OtherC
-  ) -> some Emitter<Value, Failure> where OtherB.Value == Value, OtherC.Value == Value,
+  ) -> some Emitter<Output, Failure> where OtherB.Output == Output, OtherC.Output == Output,
     OtherB.Failure == Failure, OtherC.Failure == Failure
   {
     Emitters.MergeThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
@@ -17,8 +17,8 @@ extension Emitters {
   // MARK: - Merge
 
   public struct MergeThree<UpstreamA: Emitter, UpstreamB: Emitter, UpstreamC: Emitter>: Emitter
-    where UpstreamB.Value == UpstreamA.Value, UpstreamB.Failure == UpstreamA.Failure,
-    UpstreamC.Value == UpstreamA.Value, UpstreamC.Failure == UpstreamA.Failure
+    where UpstreamB.Output == UpstreamA.Output, UpstreamB.Failure == UpstreamA.Failure,
+    UpstreamC.Output == UpstreamA.Output, UpstreamC.Failure == UpstreamA.Failure
   {
 
     // MARK: Lifecycle
@@ -35,7 +35,7 @@ extension Emitters {
 
     // MARK: Public
 
-    public typealias Value = UpstreamA.Value
+    public typealias Output = UpstreamA.Output
     public typealias Failure = UpstreamA.Failure
 
     public let upstreamA: UpstreamA
@@ -46,7 +46,7 @@ extension Emitters {
       _ subscriber: S
     )
       -> AutoDisposable
-      where S.Input == Value, S.Failure == Failure
+      where S.Input == Output, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -59,7 +59,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == Value, Downstream.Failure == Failure
+      where Downstream.Input == Output, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -70,7 +70,7 @@ extension Emitters {
 
       // MARK: Internal
 
-      typealias Value = UpstreamA.Value
+      typealias Output = UpstreamA.Output
       typealias Failure = UpstreamA.Failure
 
       // MARK: Fileprivate
@@ -96,7 +96,7 @@ extension Emitters {
         return disposable
       }
 
-      fileprivate func receive(emission: Emission<Value, Failure>) {
+      fileprivate func receive(emission: Emission<Output, Failure>) {
         downstream.receive(emission: emission)
 
         switch emission {
