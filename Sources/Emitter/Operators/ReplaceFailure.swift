@@ -31,7 +31,6 @@ extension Emitters {
     public typealias Failure = Never
 
     public let upstream: Upstream
-    private let replacement: Output
 
     public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
       where S.Input == Output, S.Failure == Never
@@ -76,6 +75,8 @@ extension Emitters {
       private let replacement: Output
 
     }
+
+    private let replacement: Output
 
   }
 }

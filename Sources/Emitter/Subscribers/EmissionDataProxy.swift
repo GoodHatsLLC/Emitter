@@ -1,5 +1,14 @@
-struct EmissionDataProxy<Metadata: Sendable, UpstreamValue, UpstreamFailure: Error, Downstream: Subscriber>: Subscriber
-where Downstream.Input == EmissionData<Metadata, UpstreamValue, UpstreamFailure>, Downstream.Failure == Never {
+// MARK: - EmissionDataProxy
+
+struct EmissionDataProxy<
+  Metadata: Sendable,
+  UpstreamValue,
+  UpstreamFailure: Error,
+  Downstream: Subscriber
+>: Subscriber
+  where Downstream.Input == EmissionData<Metadata, UpstreamValue, UpstreamFailure>,
+  Downstream.Failure == Never
+{
 
   typealias Input = UpstreamValue
   typealias Failure = UpstreamFailure
@@ -27,12 +36,15 @@ where Downstream.Input == EmissionData<Metadata, UpstreamValue, UpstreamFailure>
   private let downstream: Downstream
 }
 
+// MARK: - EmissionData
+
 struct EmissionData<Metadata: Sendable, Value, Failure: Error> {
   enum Emission {
     case value(Value)
     case failure(Failure)
     case finished
   }
+
   let meta: Metadata
   let emission: Emission
 }

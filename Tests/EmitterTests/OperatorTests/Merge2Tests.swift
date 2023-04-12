@@ -6,6 +6,8 @@ import XCTest
 
 final class Merge2Tests: XCTestCase {
 
+  struct MergeFail: Error { }
+
   let stage = DisposableStage()
 
   override func setUp() { }
@@ -62,8 +64,6 @@ final class Merge2Tests: XCTestCase {
 
     XCTAssertEqual([2, -2, -3], record)
   }
-
-  struct MergeFail: Error {}
 
   func testStream_merge_fail() throws {
     var record: [Int] = []

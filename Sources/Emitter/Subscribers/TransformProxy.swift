@@ -1,5 +1,4 @@
-struct TransformProxy<UpstreamValue, UpstreamFailure: Error, Downstream: Subscriber>: Subscriber
-{
+struct TransformProxy<UpstreamValue, UpstreamFailure: Error, Downstream: Subscriber>: Subscriber {
 
   typealias Output = UpstreamValue
   typealias Failure = UpstreamFailure
@@ -31,4 +30,3 @@ struct TransformProxy<UpstreamValue, UpstreamFailure: Error, Downstream: Subscri
   private let joinOutput: (UpstreamValue) -> Downstream.Input
   private let joinFailure: (UpstreamFailure) -> Downstream.Failure
 }
-

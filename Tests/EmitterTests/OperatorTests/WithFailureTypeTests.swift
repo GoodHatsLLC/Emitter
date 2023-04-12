@@ -6,6 +6,8 @@ import XCTest
 
 final class WithFailureTypeTests: XCTestCase {
 
+  // MARK: Internal
+
   enum Emissions<V, F: Error> {
     case value(String)
     case finished
@@ -21,14 +23,12 @@ final class WithFailureTypeTests: XCTestCase {
   }
 
   func test_failureType_fromNever() throws {
-
     let source = PublishSubject<String, Never>()
     let sub = HardcodedFailureSubscribe<String>()
     source
       .withFailure(type: HardcodedFailureSubscribe<String>.Failure.self)
       .subscribe(sub)
       .stage(on: stage)
-    
 
     source.emit(value: "hi")
     source.emit(value: ".")
@@ -39,13 +39,23 @@ final class WithFailureTypeTests: XCTestCase {
     source.finish()
 
     XCTAssertEqual(sub.values.joined(), "hi.howareyou?")
-    XCTAssert(sub.failures.count == 0)
+    XCTAssert(sub.failures.isEmpty)
     XCTAssert(sub.finishes.count == 1)
   }
 
+  // MARK: Private
+
   private class HardcodedFailureSubscribe<Output>: Subscriber {
 
+    // MARK: Internal
+
     struct Failure: Error { }
+
+    var values: [Output] = []
+    var finishes: [()] = []
+    var failures: [Failure] = []
+
+    // MARK: Fileprivate
 
     fileprivate func receive(emission: Emission<Output, Failure>) {
       switch emission {
@@ -57,10 +67,6 @@ final class WithFailureTypeTests: XCTestCase {
         finishes.append(())
       }
     }
-
-    var values: [Output] = []
-    var finishes: [()] = []
-    var failures: [Failure] = []
 
   }
 

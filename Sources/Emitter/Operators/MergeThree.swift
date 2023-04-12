@@ -11,7 +11,9 @@ extension Emitter {
   }
 }
 
-fileprivate enum Source: CaseIterable {
+// MARK: - Source
+
+private enum Source: CaseIterable {
   case a
   case b
   case c
@@ -22,7 +24,8 @@ fileprivate enum Source: CaseIterable {
 extension Emitters {
 
   public struct MergeThree<UpstreamA: Emitter, UpstreamB: Emitter, UpstreamC: Emitter>: Emitter
-  where UpstreamA.Output == UpstreamB.Output, UpstreamA.Failure == UpstreamB.Failure, UpstreamC.Output == UpstreamA.Output, UpstreamC.Failure == UpstreamA.Failure
+    where UpstreamA.Output == UpstreamB.Output, UpstreamA.Failure == UpstreamB.Failure,
+    UpstreamC.Output == UpstreamA.Output, UpstreamC.Failure == UpstreamA.Failure
   {
 
     // MARK: Lifecycle
@@ -49,8 +52,8 @@ extension Emitters {
     public func subscribe<S: Subscriber>(
       _ subscriber: S
     )
-    -> AutoDisposable
-    where S.Input == Output, S.Failure == Failure
+      -> AutoDisposable
+      where S.Input == Output, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -62,7 +65,8 @@ extension Emitters {
 
     // MARK: Private
 
-    private final class IntermediateSub<Downstream: Subscriber>: Subscriber where Downstream.Input == UpstreamA.Output, Downstream.Failure == UpstreamA.Failure
+    private final class IntermediateSub<Downstream: Subscriber>: Subscriber
+      where Downstream.Input == UpstreamA.Output, Downstream.Failure == UpstreamA.Failure
     {
 
       // MARK: Lifecycle
@@ -71,52 +75,12 @@ extension Emitters {
         self.downstream = downstream
       }
 
-      // MARK: Fileprivate
+      // MARK: Internal
 
-      fileprivate let downstream: Downstream
-
-      fileprivate typealias Input = EmissionData<Source, UpstreamA.Output, UpstreamA.Failure>
-      fileprivate typealias Failure = Never
-
-      fileprivate func subscribe(
-        upstreamA: UpstreamA,
-        upstreamB: UpstreamB,
-        upstreamC: UpstreamC
-      )
-      -> AutoDisposable
-      {
-
-        let dispA = upstreamA.subscribe(
-          EmissionDataProxy(
-            metadata: Source.a,
-            downstream: self
-          )
-        )
-
-        let dispB = upstreamB.subscribe(
-          EmissionDataProxy<Source, UpstreamA.Output, UpstreamA.Failure, IntermediateSub>(
-            metadata: Source.b,
-            downstream: self
-          )
-        )
-
-        let dispC = upstreamC.subscribe(
-          EmissionDataProxy<Source, UpstreamA.Output, UpstreamA.Failure, IntermediateSub>(
-            metadata: Source.c,
-            downstream: self
-          )
-        )
-
-
-        let disposable = AutoDisposable {
-          dispA.dispose()
-          dispB.dispose()
-          dispC.dispose()
-        }
-        return disposable
-      }
-
-      func receive(emission: Emission<EmissionData<Source, UpstreamA.Output, UpstreamA.Failure>, Never>) {
+      func receive(emission: Emission<
+        EmissionData<Source, UpstreamA.Output, UpstreamA.Failure>,
+        Never
+      >) {
         switch emission {
         case .finished:
           assertionFailure()
@@ -127,7 +91,9 @@ extension Emitters {
           switch emission {
           case .failure(let union):
             let shouldForward = state.withLock {
-              if $0.finished { return false }
+              if $0.finished {
+                return false
+              }
               $0.finished = true
               return true
             }
@@ -156,6 +122,49 @@ extension Emitters {
         }
       }
 
+      // MARK: Fileprivate
+
+      fileprivate typealias Input = EmissionData<Source, UpstreamA.Output, UpstreamA.Failure>
+      fileprivate typealias Failure = Never
+
+      fileprivate let downstream: Downstream
+
+      fileprivate func subscribe(
+        upstreamA: UpstreamA,
+        upstreamB: UpstreamB,
+        upstreamC: UpstreamC
+      )
+        -> AutoDisposable
+      {
+        let dispA = upstreamA.subscribe(
+          EmissionDataProxy(
+            metadata: Source.a,
+            downstream: self
+          )
+        )
+
+        let dispB = upstreamB.subscribe(
+          EmissionDataProxy<Source, UpstreamA.Output, UpstreamA.Failure, IntermediateSub>(
+            metadata: Source.b,
+            downstream: self
+          )
+        )
+
+        let dispC = upstreamC.subscribe(
+          EmissionDataProxy<Source, UpstreamA.Output, UpstreamA.Failure, IntermediateSub>(
+            metadata: Source.c,
+            downstream: self
+          )
+        )
+
+        let disposable = AutoDisposable {
+          dispA.dispose()
+          dispB.dispose()
+          dispC.dispose()
+        }
+        return disposable
+      }
+
       // MARK: Private
 
       private let state = Locked<(finishedSources: Set<Source>, finished: Bool)>(([], false))
@@ -166,4 +175,5 @@ extension Emitters {
 
 // MARK: - Emitters.MergeThree + Sendable
 
-extension Emitters.MergeThree: Sendable where UpstreamA: Sendable, UpstreamB: Sendable, UpstreamC: Sendable { }
+extension Emitters.MergeThree: Sendable where UpstreamA: Sendable, UpstreamB: Sendable,
+  UpstreamC: Sendable { }

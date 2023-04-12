@@ -6,27 +6,30 @@ import XCTest
 
 final class MapFailureTests: XCTestCase {
 
+  struct OneError: Error {
+    let msg: String
+  }
+
+  struct TwoError: Error {
+    init(_ one: OneError) { self.msg = one.msg }
+    let msg: String
+  }
+
+  struct ThreeError: Error, Equatable {
+    init(msg: String) {
+      self.msg = msg
+    }
+
+    init(_ two: TwoError) { self.msg = two.msg }
+    let msg: String
+  }
+
   let stage = DisposableStage()
 
   override func setUp() { }
 
   override func tearDown() {
     stage.reset()
-  }
-
-  struct OneError: Error {
-    let msg: String
-  }
-  struct TwoError: Error {
-    init(_ one: OneError) { msg = one.msg }
-    let msg: String
-  }
-  struct ThreeError: Error, Equatable {
-    init(msg: String) {
-      self.msg = msg
-    }
-    init(_ two: TwoError) { msg = two.msg }
-    let msg: String
   }
 
   func test_MapFailure() throws {

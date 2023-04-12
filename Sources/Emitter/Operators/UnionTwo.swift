@@ -6,6 +6,7 @@ extension Emitter {
   ) -> some Emitter<Union2<Output, UpstreamB.Output>, Union2<Failure, UpstreamB.Failure>> {
     Emitters.UnionTwo(upstreamA: self, upstreamB: otherB)
   }
+
   public func union<UpstreamB: Emitter>(
     _ otherB: UpstreamB
   ) -> some Emitter<Union2<Output, UpstreamB.Output>, Error> {
@@ -15,18 +16,23 @@ extension Emitter {
         error as Error
       }
   }
+
   public func union<UpstreamB: Emitter>(
     _ otherB: UpstreamB
-  ) -> some Emitter<Union2<Output, UpstreamB.Output>, Never> where Failure == Never, UpstreamB.Failure == Never {
+  ) -> some Emitter<Union2<Output, UpstreamB.Output>, Never> where Failure == Never,
+    UpstreamB.Failure == Never
+  {
     Emitters
       .UnionTwo(upstreamA: self, upstreamB: otherB)
       .mapFailure { error in
-        switch error {}
+        switch error { }
       }
   }
 }
 
-fileprivate enum Source: CaseIterable {
+// MARK: - Source
+
+private enum Source: CaseIterable {
   case a
   case b
 }
@@ -35,8 +41,7 @@ fileprivate enum Source: CaseIterable {
 
 extension Emitters {
 
-  public struct UnionTwo<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter
-  {
+  public struct UnionTwo<UpstreamA: Emitter, UpstreamB: Emitter>: Emitter {
 
     // MARK: Lifecycle
 
@@ -71,7 +76,11 @@ extension Emitters {
 
     // MARK: Private
 
-    private final class IntermediateSub<Downstream: Subscriber>: Subscriber where Downstream.Input == Union2<UpstreamA.Output, UpstreamB.Output>, Downstream.Failure == Union2<UpstreamA.Failure, UpstreamB.Failure>
+    private final class IntermediateSub<Downstream: Subscriber>: Subscriber
+      where Downstream.Input == Union2<
+        UpstreamA.Output,
+        UpstreamB.Output
+      >, Downstream.Failure == Union2<UpstreamA.Failure, UpstreamB.Failure>
     {
 
       // MARK: Lifecycle
@@ -80,47 +89,16 @@ extension Emitters {
         self.downstream = downstream
       }
 
-      // MARK: Fileprivate
+      // MARK: Internal
 
-      fileprivate let downstream: Downstream
-
-      fileprivate typealias Input = EmissionData<Source, Union2<UpstreamA.Output, UpstreamB.Output>, Union2<UpstreamA.Failure, UpstreamB.Failure>>
-      fileprivate typealias Failure = Never
-
-      fileprivate func subscribe(
-        upstreamA: UpstreamA,
-        upstreamB: UpstreamB
-      )
-        -> AutoDisposable
-      {
-
-        let dispA = upstreamA.subscribe(
-          TransformProxy(
-            downstream: EmissionDataProxy(
-              metadata: Source.a,
-              downstream: self
-            ),
-            joinOutput: Union2<UpstreamA.Output, UpstreamB.Output>.a,
-            joinFailure: Union2<UpstreamA.Failure, UpstreamB.Failure>.a)
-        )
-
-        let dispB = upstreamB.subscribe(
-          TransformProxy(
-            downstream: EmissionDataProxy<Source, Union2<UpstreamA.Output, UpstreamB.Output>, Union2<UpstreamA.Failure, UpstreamB.Failure>, IntermediateSub>(
-              metadata: Source.b,
-              downstream: self
-            ),
-            joinOutput: Union2<UpstreamA.Output, UpstreamB.Output>.b,
-            joinFailure: Union2<UpstreamA.Failure, UpstreamB.Failure>.b)
-        )
-        let disposable = AutoDisposable {
-          dispA.dispose()
-          dispB.dispose()
-        }
-        return disposable
-      }
-
-      func receive(emission: Emission<EmissionData<Source, Union2<UpstreamA.Output, UpstreamB.Output>, Union2<UpstreamA.Failure, UpstreamB.Failure>>, Never>) {
+      func receive(emission: Emission<
+        EmissionData<
+          Source,
+          Union2<UpstreamA.Output, UpstreamB.Output>,
+          Union2<UpstreamA.Failure, UpstreamB.Failure>
+        >,
+        Never
+      >) {
         switch emission {
         case .finished:
           assertionFailure()
@@ -131,7 +109,9 @@ extension Emitters {
           switch emission {
           case .failure(let union):
             let shouldForward = state.withLock {
-              if $0.finished { return false }
+              if $0.finished {
+                return false
+              }
               $0.finished = true
               return true
             }
@@ -159,6 +139,56 @@ extension Emitters {
             }
           }
         }
+      }
+
+      // MARK: Fileprivate
+
+      fileprivate typealias Input = EmissionData<
+        Source,
+        Union2<UpstreamA.Output, UpstreamB.Output>,
+        Union2<UpstreamA.Failure, UpstreamB.Failure>
+      >
+      fileprivate typealias Failure = Never
+
+      fileprivate let downstream: Downstream
+
+      fileprivate func subscribe(
+        upstreamA: UpstreamA,
+        upstreamB: UpstreamB
+      )
+        -> AutoDisposable
+      {
+        let dispA = upstreamA.subscribe(
+          TransformProxy(
+            downstream: EmissionDataProxy(
+              metadata: Source.a,
+              downstream: self
+            ),
+            joinOutput: Union2<UpstreamA.Output, UpstreamB.Output>.a,
+            joinFailure: Union2<UpstreamA.Failure, UpstreamB.Failure>.a
+          )
+        )
+
+        let dispB = upstreamB.subscribe(
+          TransformProxy(
+            downstream: EmissionDataProxy<
+              Source,
+              Union2<UpstreamA.Output, UpstreamB.Output>,
+              Union2<UpstreamA.Failure, UpstreamB.Failure>,
+              IntermediateSub
+            >(
+              metadata: Source.b,
+              downstream: self
+            ),
+            joinOutput: Union2<UpstreamA.Output, UpstreamB.Output>.b,
+            joinFailure: Union2<UpstreamA.Failure, UpstreamB.Failure>.b
+          )
+        )
+        let disposable = AutoDisposable {
+          dispA.dispose()
+          dispB.dispose()
+        }
+        return disposable
       }
 
       // MARK: Private

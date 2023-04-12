@@ -6,6 +6,9 @@ import XCTest
 
 final class UnionTwoTests: XCTestCase {
 
+  struct ErrA: Error { }
+  struct ErrB: Error { }
+
   let stage = DisposableStage()
 
   override func setUp() { }
@@ -13,9 +16,6 @@ final class UnionTwoTests: XCTestCase {
   override func tearDown() {
     stage.reset()
   }
-
-  struct ErrA: Error {}
-  struct ErrB: Error {}
 
   func test_Union2_failEnd() throws {
     let sourceA: PublishSubject<Int, ErrA> = .init()
@@ -50,12 +50,11 @@ final class UnionTwoTests: XCTestCase {
         Union2<Int, String>.b("a"),
         Union2<Int, String>.a(3),
         Union2<Int, String>.b("b"),
-        Union2<Int, String>.b("c")
+        Union2<Int, String>.b("c"),
       ],
       values
     )
   }
-
 
   func test_Union2_finishEnd() throws {
     let sourceA: PublishSubject<Int, ErrA> = .init()

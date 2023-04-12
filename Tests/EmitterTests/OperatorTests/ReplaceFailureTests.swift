@@ -6,6 +6,8 @@ import XCTest
 
 final class ReplaceFailureTests: XCTestCase {
 
+  struct TestError: Error { }
+
   let stage = DisposableStage()
 
   override func setUp() { }
@@ -46,7 +48,5 @@ final class ReplaceFailureTests: XCTestCase {
     XCTAssertEqual(record, ["S-O-M-E-T-H-I-N-G-F-U-N"])
     XCTAssertEqual(fin.count, 0)
   }
-
-  struct TestError: Error {}
 
 }
