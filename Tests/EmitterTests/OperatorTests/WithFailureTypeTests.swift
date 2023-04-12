@@ -6,8 +6,6 @@ import XCTest
 
 final class WithFailureTypeTests: XCTestCase {
 
-  struct FailureType: Error { }
-
   enum Emissions<V, F: Error> {
     case value(String)
     case finished
@@ -23,19 +21,14 @@ final class WithFailureTypeTests: XCTestCase {
   }
 
   func test_failureType_fromNever() throws {
-    var emissions: [Emissions<String, FailureType>] = []
 
     let source = PublishSubject<String, Never>()
+    let sub = HardcodedFailureSubscribe<String>()
     source
-      .withFailure(type: FailureType.self)
-      .subscribe { value in
-        emissions.append(.value(value))
-      } finished: {
-        emissions.append(.finished)
-      } failed: { _ in
-        emissions.append(.failure)
-      }
+      .withFailure(type: HardcodedFailureSubscribe<String>.Failure.self)
+      .subscribe(sub)
       .stage(on: stage)
+    
 
     source.emit(value: "hi")
     source.emit(value: ".")
@@ -45,15 +38,30 @@ final class WithFailureTypeTests: XCTestCase {
     source.emit(value: "?")
     source.finish()
 
-    let joined = emissions.compactMap { emission in
-      if case .value(let v) = emission {
-        return v
-      } else {
-        return nil
-      }
-    }.joined(separator: " ")
+    XCTAssertEqual(sub.values.joined(), "hi.howareyou?")
+    XCTAssert(sub.failures.count == 0)
+    XCTAssert(sub.finishes.count == 1)
+  }
 
-    XCTAssertEqual(joined, "hi . how are you ?")
+  private class HardcodedFailureSubscribe<Output>: Subscriber {
+
+    struct Failure: Error { }
+
+    fileprivate func receive(emission: Emission<Output, Failure>) {
+      switch emission {
+      case .value(let value):
+        values.append(value)
+      case .failed(let error):
+        failures.append(error)
+      case .finished:
+        finishes.append(())
+      }
+    }
+
+    var values: [Output] = []
+    var finishes: [()] = []
+    var failures: [Failure] = []
+
   }
 
 }

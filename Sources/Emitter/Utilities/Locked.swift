@@ -61,7 +61,7 @@ struct Locked<T> {
   /// - Returns: The instance of `aT` created by the action.
   @inline(__always)
   @discardableResult
-  func withLock<aT>(action: (inout T) throws -> aT) rethrows -> aT {
+  func withLock<aT>(action: (_ mutValue: inout T) throws -> aT) rethrows -> aT {
     let lock = underlying
     lock.lock()
     defer { lock.unlock() }

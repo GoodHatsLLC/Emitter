@@ -43,10 +43,13 @@ extension PublishSubject {
     case .failed,
          .finished:
       let subs = state.withLock { state in
-        state.isActive = false
-        let subs = state.subs
-        state.subs.removeAll()
-        return subs
+        if state.isActive {
+          state.isActive = false
+          defer { state.subs.removeAll() }
+          return state.subs
+        } else {
+          return []
+        }
       }
       subs.forEach { sub in
         sub.receive(emission: emission)

@@ -19,7 +19,7 @@ extension Emitters {
 
     public init(
       upstream: Upstream,
-      transformer: @escaping @Sendable (Upstream.Output) -> TransformedOutput
+      transformer: @escaping @Sendable (_ value: Upstream.Output) -> TransformedOutput
     ) {
       self.transformer = transformer
       self.upstream = upstream
