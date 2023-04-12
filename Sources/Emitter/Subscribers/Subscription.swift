@@ -8,7 +8,7 @@ final class Subscription<Value, Failure: Error>: Sendable, Hashable {
 
   init<Sub: Subscriber>(
     subscriber: Sub
-  ) where Value == Sub.Value, Failure == Sub.Failure {
+  ) where Value == Sub.Input, Failure == Sub.Failure {
     self.subscriberReceiver = { emission in subscriber.receive(emission: emission) }
   }
 

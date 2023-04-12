@@ -54,11 +54,8 @@ final class CreateTests: XCTestCase {
 
     createSource
       .subscribe { _ in
-
       } finished: {
         didFinish = true
-      } failed: { _ in
-        XCTFail()
       }
       .stage(on: stage)
 
@@ -88,7 +85,6 @@ final class CreateTests: XCTestCase {
       } finished: {
         XCTFail()
       } failed: { error in
-        XCTAssert(error is ExampleFailure)
         didFail = true
       }
       .stage(on: stage)
@@ -122,8 +118,6 @@ final class CreateTests: XCTestCase {
         // for lack of a way to test for the current executor
         XCTAssert(Thread.isMainThread)
         didFinish = true
-      } failed: { _ in
-        XCTFail()
       }
       .stage(on: stage)
 

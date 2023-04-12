@@ -34,7 +34,7 @@ extension Emitters {
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       for value in prefixValues {
         subscriber.receive(emission: .value(value))

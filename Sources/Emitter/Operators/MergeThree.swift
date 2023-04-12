@@ -46,7 +46,7 @@ extension Emitters {
       _ subscriber: S
     )
       -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -59,7 +59,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle

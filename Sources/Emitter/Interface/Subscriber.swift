@@ -1,5 +1,5 @@
-public protocol Subscriber<Value, Failure> {
-  associatedtype Value
+public protocol Subscriber<Input, Failure> {
+  associatedtype Input
   associatedtype Failure: Error
-  nonisolated func receive(emission: Emission<Value, Failure>)
+  nonisolated func receive(emission: Emission<Input, Failure>)
 }

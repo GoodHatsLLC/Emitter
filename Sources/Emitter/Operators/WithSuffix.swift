@@ -34,7 +34,7 @@ extension Emitters {
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       return upstream.subscribe(
         Sub<S>(
@@ -47,7 +47,7 @@ extension Emitters {
     // MARK: Private
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle

@@ -8,4 +8,4 @@ public enum Emission<Value, Failure: Error> {
 
 // MARK: Sendable
 
-extension Emission: Sendable where Value: Sendable { }
+extension Emission: Sendable where Value: Sendable, Failure: Sendable { }

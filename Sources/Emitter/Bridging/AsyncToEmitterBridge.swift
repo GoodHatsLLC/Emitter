@@ -24,7 +24,7 @@ public struct AsyncToEmitterBridge<Seq: AsyncSequence>: Emitter, @unchecked Send
   public typealias Value = Seq.Element
 
   public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-    where Seq.Element == S.Value, S.Failure == Error
+    where Seq.Element == S.Input, S.Failure == Error
   {
     let stage = DisposableStage()
     Emitters

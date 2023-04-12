@@ -2,7 +2,11 @@ import Disposable
 
 extension Emitter {
   public func first() -> some Emitter<Value, Failure> {
-    Emitters.First(upstream: self)
+    Emitters.First(upstream: self, count: 1)
+  }
+
+  public func first(_ count: Int) -> some Emitter<Value, Failure> {
+    Emitters.First(upstream: self, count: count)
   }
 }
 
@@ -16,9 +20,11 @@ extension Emitters {
     // MARK: Lifecycle
 
     public init(
-      upstream: Upstream
+      upstream: Upstream,
+      count: Int
     ) {
       self.upstream = upstream
+      self.count = count
     }
 
     // MARK: Public
@@ -28,11 +34,12 @@ extension Emitters {
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       return upstream.subscribe(
         Sub<S>(
-          downstream: subscriber
+          downstream: subscriber,
+          count: count
         )
       )
     }
@@ -40,29 +47,31 @@ extension Emitters {
     // MARK: Private
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
 
       public init(
-        downstream: Downstream
+        downstream: Downstream,
+        count: Int
       ) {
         self.downstream = downstream
+        self.remaining = .init(count)
       }
 
       // MARK: Public
 
       public func receive(emission: Emission<Upstream.Value, Upstream.Failure>) {
-        let wasFirst = isFirst.withLock { isFirst in
-          if isFirst {
-            isFirst.toggle()
+        let shouldReceive = remaining.withLock { remaining in
+          if remaining > 0 {
+            remaining -= 1
             return true
           } else {
             return false
           }
         }
-        if wasFirst {
+        if shouldReceive {
           switch emission {
           case .value:
             downstream.receive(emission: emission)
@@ -75,12 +84,12 @@ extension Emitters {
 
       // MARK: Private
 
-      private let isFirst = Locked<Bool>(true)
-
+      private let remaining: Locked<Int>
       private let downstream: Downstream
     }
 
     private let upstream: Upstream
+    private let count: Int
   }
 }
 

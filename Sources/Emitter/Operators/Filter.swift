@@ -35,7 +35,7 @@ extension Emitters {
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       upstream.subscribe(Sub<S>(downstream: subscriber, evaluator: evaluator))
     }
@@ -43,7 +43,7 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
       fileprivate init(downstream: Downstream, evaluator: @escaping (Value) -> Bool) {
         self.downstream = downstream

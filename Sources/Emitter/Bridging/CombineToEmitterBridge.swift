@@ -37,7 +37,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
   public let upstream: Upstream
 
   public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-    where Upstream.Output == S.Value, Upstream.Failure == S.Failure
+    where Upstream.Output == S.Input, Upstream.Failure == S.Failure
   {
     let subscriber = Sub<S, Upstream.Failure>(downstream: subscriber)
     upstream.receive(subscriber: subscriber)
@@ -47,7 +47,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
   // MARK: Private
 
   private final class Sub<Downstream: Subscriber, Failure: Error>: Combine.Subscriber, Disposable
-    where Downstream.Value == Value, Downstream.Failure == Failure
+    where Downstream.Input == Value, Downstream.Failure == Failure
   {
 
     // MARK: Lifecycle
@@ -58,8 +58,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
 
     // MARK: Internal
 
-    typealias Input = Downstream.Value
-    typealias Value = Downstream.Value
+    typealias Input = Downstream.Input
 
     let combineIdentifier = CombineIdentifier()
 
@@ -71,7 +70,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
       subscription?.isDisposed ?? !hasStarted
     }
 
-    func receive(_ input: Downstream.Value) -> Subscribers.Demand {
+    func receive(_ input: Downstream.Input) -> Subscribers.Demand {
       hasStarted = true
       downstream.receive(emission: .value(input))
       return .unlimited

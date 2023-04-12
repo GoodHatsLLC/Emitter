@@ -39,14 +39,14 @@ extension Emitters {
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
       -> AutoDisposable
-      where S.Failure == Failure, S.Value == Unwrapped
+      where S.Failure == Failure, S.Input == Unwrapped
     {
       upstream.subscribe(Sub<S>(downstream: subscriber))
     }
 
     // MARK: Private
 
-    private struct Sub<Downstream: Subscriber>: Subscriber where Downstream.Value == Unwrapped,
+    private struct Sub<Downstream: Subscriber>: Subscriber where  Downstream.Input == Unwrapped,
       Downstream.Failure == Failure
     {
 

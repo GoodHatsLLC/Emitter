@@ -34,7 +34,7 @@ extension Emitters {
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       upstream.subscribe(
         Sub<S>(
@@ -47,7 +47,7 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == TransformedValue, Downstream.Failure == Upstream.Failure
+      where  Downstream.Input == TransformedValue, Downstream.Failure == Upstream.Failure
     {
 
       typealias Value = Upstream.Value
@@ -61,7 +61,7 @@ extension Emitters {
         self.transformer = transformer
       }
 
-      fileprivate func receive(emission: Emission<Upstream.Value, Failure>) {
+      fileprivate func receive(emission: Emission<Value, Failure>) {
         let newEmission: Emission<TransformedValue, Failure>
         switch emission {
         case .value(let value):

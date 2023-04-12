@@ -85,7 +85,7 @@ extension ValueSubject {
     _ subscriber: S
   )
     -> AutoDisposable
-    where S.Value == Value, S.Failure == Failure
+    where S.Input == Value, S.Failure == Failure
   {
     let subscription = Subscription<Value, Failure>(
       subscriber: subscriber

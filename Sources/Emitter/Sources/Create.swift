@@ -35,7 +35,7 @@ extension Emitters {
     // MARK: Fileprivate
 
     fileprivate func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       let subscription = Subscription<Value, Failure>(
         subscriber: subscriber
@@ -81,7 +81,7 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
 
       fileprivate init(

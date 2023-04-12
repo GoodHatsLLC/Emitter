@@ -14,7 +14,7 @@ public struct AnyEmitter<Value, Failure: Error>: Emitter {
   public func subscribe<S: Subscriber>(
     _ subscriber: S
   )
-    -> AutoDisposable where S.Value == Value, S.Failure == Failure
+    -> AutoDisposable where S.Input == Value, S.Failure == Failure
   {
     subscribeFunc(subscriber)
   }

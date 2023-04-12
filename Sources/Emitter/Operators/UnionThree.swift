@@ -44,7 +44,7 @@ extension Emitters {
       _ subscriber: S
     )
       -> AutoDisposable
-      where S.Value == Value, S.Failure == Failure
+      where S.Input == Value, S.Failure == Failure
     {
       IntermediateSub<S>(downstream: subscriber)
         .subscribe(
@@ -57,7 +57,7 @@ extension Emitters {
     // MARK: Private
 
     private final class IntermediateSub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -135,14 +135,14 @@ extension Emitters {
 
       fileprivate init(
         downstream: Downstream,
-        joinInit: @escaping (UpstreamValue) -> Downstream.Value
+        joinInit: @escaping (UpstreamValue) ->  Downstream.Input
       ) {
         self.downstream = downstream
         self.joinInit = joinInit
       }
 
       fileprivate func receive(emission: Emission<UpstreamValue, Failure>) {
-        let forwarded: Emission<Downstream.Value, Failure>
+        let forwarded: Emission< Downstream.Input, Failure>
         switch emission {
         case .value(let value):
           forwarded = .value(joinInit(value))
@@ -155,7 +155,7 @@ extension Emitters {
       }
 
       private let downstream: Downstream
-      private let joinInit: (UpstreamValue) -> Downstream.Value
+      private let joinInit: (UpstreamValue) ->  Downstream.Input
 
     }
 

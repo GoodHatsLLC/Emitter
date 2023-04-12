@@ -39,7 +39,7 @@ extension Emitters {
     public typealias Value = Tuple.Size2<ValueA, ValueB>
 
     public func subscribe<S: Subscriber>(_ subscriber: S)
-      -> AutoDisposable where S.Value == Value, S.Failure == Failure
+      -> AutoDisposable where S.Input == Value, S.Failure == Failure
     {
       let stage = DisposableStage()
       let sub = Sub(downstream: subscriber)
@@ -63,7 +63,7 @@ extension Emitters {
     }
 
     private final class Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Value == Value, Downstream.Failure == Failure
+      where Downstream.Input == Value, Downstream.Failure == Failure
     {
 
       // MARK: Lifecycle
@@ -106,7 +106,7 @@ extension Emitters {
     }
 
     private struct Proxy<UpstreamValue, Downstream: Subscriber>: Subscriber
-      where Downstream.Value == JoinSubInput, Downstream.Failure == Failure
+      where Downstream.Input == JoinSubInput, Downstream.Failure == Failure
     {
 
       fileprivate init(
