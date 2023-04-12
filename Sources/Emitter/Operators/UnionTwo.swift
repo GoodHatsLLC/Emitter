@@ -1,7 +1,7 @@
 import Disposable
 
 extension Emitter {
-  public func unionInfo<UpstreamB: Emitter>(
+  public func unionWithTypedFailure<UpstreamB: Emitter>(
     _ otherB: UpstreamB
   ) -> some Emitter<Union2<Output, UpstreamB.Output>, Union2<Failure, UpstreamB.Failure>> {
     Emitters.UnionTwo(upstreamA: self, upstreamB: otherB)

@@ -25,7 +25,7 @@ final class UnionTwoTests: XCTestCase {
     var errors: [Union2<ErrA, ErrB>] = []
 
     sourceA
-      .unionInfo(sourceB)
+      .unionWithTypedFailure(sourceB)
       .subscribe { value in
         values.append(value)
       } failed: { error in
@@ -65,7 +65,7 @@ final class UnionTwoTests: XCTestCase {
     var errors: [Union2<ErrA, ErrB>] = []
 
     sourceA
-      .unionInfo(sourceB)
+      .unionWithTypedFailure(sourceB)
       .subscribe { value in
         values.append(value)
       } failed: { error in
