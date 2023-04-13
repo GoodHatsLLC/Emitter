@@ -1,25 +1,25 @@
 import Disposable
 
 extension Emitter {
-  public func removeDuplicates() -> some Emitter<Output, Failure>
+  public func dedupe() -> some Emitter<Output, Failure>
     where Output: Equatable
   {
-    Emitters.RemoveDuplicates(upstream: self, eqFunc: ==)
+    Emitters.Deduping(upstream: self, eqFunc: ==)
   }
 
-  public func removeDuplicates(by filter: @escaping (_ lhs: Output, _ rhs: Output) -> Bool)
+  public func dedupe(by filter: @escaping (_ lhs: Output, _ rhs: Output) -> Bool)
     -> some Emitter<Output, Failure>
   {
-    Emitters.RemoveDuplicates(upstream: self, eqFunc: filter)
+    Emitters.Deduping(upstream: self, eqFunc: filter)
   }
 }
 
-// MARK: - Emitters.RemoveDuplicates
+// MARK: - Emitters.Deduping
 
 extension Emitters {
-  // MARK: - RemoveDuplicates
+  // MARK: - Deduping
 
-  public struct RemoveDuplicates<Upstream: Emitter>: Emitter {
+  public struct Deduping<Upstream: Emitter>: Emitter {
 
     // MARK: Lifecycle
 
@@ -69,10 +69,13 @@ extension Emitters {
       public func receive(emission: Emission<Output, Failure>) {
         switch emission {
         case .value(let curr):
+          let last = last.withLock(action: { last in
+            defer { last = curr }
+            return last
+          })
           if let last, eqFunc(curr, last) {
             // curr == last, skip emission.
           } else {
-            last = curr
             downstream.receive(emission: emission)
           }
         case _:
@@ -84,7 +87,7 @@ extension Emitters {
 
       private let downstream: Downstream
       private let eqFunc: (Upstream.Output, Upstream.Output) -> Bool
-      private var last: Output?
+      private let last = Locked<Output?>(nil)
 
     }
 

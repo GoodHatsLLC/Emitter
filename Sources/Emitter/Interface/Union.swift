@@ -1,6 +1,7 @@
 // MARK: - Union2
 
-@frozen public enum Union2<A, B> {
+@frozen
+public enum Union2<A, B> {
   case a(A)
   case b(B)
 }
@@ -23,7 +24,8 @@ extension Union2: Hashable where A: Hashable, B: Hashable { }
 
 // MARK: - Union3
 
-@frozen public enum Union3<A, B, C> {
+@frozen
+public enum Union3<A, B, C> {
   case a(A)
   case b(B)
   case c(C)

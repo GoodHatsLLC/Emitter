@@ -41,6 +41,8 @@ extension Emitter {
 
 private struct Subscribe<Output, Failure: Error>: Subscriber {
 
+  // MARK: Lifecycle
+
   fileprivate init(
     value: @escaping (Output) -> Void,
     finished: (() -> Void)?,
@@ -51,16 +53,46 @@ private struct Subscribe<Output, Failure: Error>: Subscriber {
     self.failedFunc = failed
   }
 
+  // MARK: Fileprivate
+
   fileprivate func receive(emission: Emission<Output, Failure>) {
     switch emission {
     case .value(let value):
-      valueFunc(value)
+      if state.value {
+        valueFunc(value)
+      }
     case .failed(let error):
-      failedFunc?(error)
+      if
+        state.withLock(action: { mutValue in
+          guard mutValue
+          else {
+            return false
+          }
+          mutValue = false
+          return true
+        })
+      {
+        failedFunc?(error)
+      }
     case .finished:
-      finishedFunc?()
+      if
+        state.withLock(action: { mutValue in
+          guard mutValue
+          else {
+            return false
+          }
+          mutValue = false
+          return true
+        })
+      {
+        finishedFunc?()
+      }
     }
   }
+
+  // MARK: Private
+
+  private let state = Locked(true)
 
   private let valueFunc: (Output) -> Void
   private let finishedFunc: (() -> Void)?
@@ -72,6 +104,8 @@ private struct Subscribe<Output, Failure: Error>: Subscriber {
 
 private struct DriverSubscribe<Output>: Subscriber {
 
+  // MARK: Lifecycle
+
   fileprivate init(
     value: @escaping (Output) -> Void,
     finished: (() -> Void)?
@@ -80,15 +114,33 @@ private struct DriverSubscribe<Output>: Subscriber {
     self.finishedFunc = finished
   }
 
+  // MARK: Fileprivate
+
   fileprivate func receive(emission: Emission<Output, Never>) {
     switch emission {
     case .value(let value):
-      valueFunc(value)
+      if state.value {
+        valueFunc(value)
+      }
     case .finished:
-      finishedFunc?()
+      if
+        state.withLock(action: { mutValue in
+          guard mutValue
+          else {
+            return false
+          }
+          mutValue = false
+          return true
+        })
+      {
+        finishedFunc?()
+      }
     }
   }
 
+  // MARK: Private
+
+  private let state = Locked(true)
   private let valueFunc: (Output) -> Void
   private let finishedFunc: (() -> Void)?
 

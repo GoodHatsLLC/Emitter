@@ -36,7 +36,11 @@ extension Emitter {
     Emitters
       .CombineLatestTwo(upstreamA: self, upstreamB: otherB)
       .mapFailure { error in
-        switch error { }
+        switch error {
+        case .a,
+             .b:
+          fatalError("Failure == Never")
+        }
       }
   }
 }

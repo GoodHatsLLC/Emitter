@@ -1,19 +1,19 @@
 import Disposable
 
 extension Emitter {
-  public func replaceFailure(
+  public func replaceFailures(
     with replacement: Output
   ) -> some Emitter<Output, Never> {
-    Emitters.ReplaceFailure(upstream: self, replacement: replacement)
+    Emitters.ReplaceFailures(upstream: self, replacement: replacement)
   }
 }
 
-// MARK: - Emitters.ReplaceFailure
+// MARK: - Emitters.ReplaceFailures
 
 extension Emitters {
-  // MARK: - ReplaceFailure
+  // MARK: - ReplaceFailures
 
-  public struct ReplaceFailure<Upstream: Emitter>: Emitter {
+  public struct ReplaceFailures<Upstream: Emitter>: Emitter {
 
     // MARK: Lifecycle
 

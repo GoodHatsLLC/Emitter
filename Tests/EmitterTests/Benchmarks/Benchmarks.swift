@@ -235,16 +235,16 @@ extension Benchmarks {
   #endif
 }
 
-// MARK: RemoveDuplicates
+// MARK: Deduping
 
 extension Benchmarks {
-  func _test_removeDuplicates() {
+  func _test_dedupe() {
     measure { // Time: 0.023 sec
       let stage = DisposableStage()
       let sourceA: PublishSubject<Int, Never> = .init()
 
       sourceA
-        .removeDuplicates()
+        .dedupe()
         .subscribe { value in
           blackHole(value)
         }
@@ -259,7 +259,7 @@ extension Benchmarks {
   }
 
   #if canImport(Combine)
-  func _test_removeDuplicates_combine() {
+  func _test_dedupe_combine() {
     measure { // Time: 0.030 sec
       let sourceA: PassthroughSubject<Int, Never> = .init()
       var stage = Set<AnyCancellable>()

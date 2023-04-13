@@ -69,7 +69,6 @@ extension Emitters {
       fileprivate func receive(emission: Emission<Upstream.Output, Failure>) {
         switch emission {
         case .value(let value):
-          current?.receive(emission: .finished)
           currentDisp?.dispose()
           let inner = InnerSub(downstream: downstream)
           current = inner
@@ -103,7 +102,7 @@ extension Emitters {
           case .value(let value):
             downstream.receive(emission: .value(value))
           case .finished:
-            downstream.receive(emission: .finished)
+            break
           case .failed(let error):
             downstream.receive(emission: .failed(error))
           }

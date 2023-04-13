@@ -30,7 +30,7 @@ final class ReplaceFailureTests: XCTestCase {
       }}
       .map { $0.uppercased() }
       .map { Optional($0) }
-      .replaceFailure(with: nil)
+      .replaceFailures(with: nil)
       .compact()
       .map { Array($0).map { "\($0)" } }
       .map { $0.joined(separator: "-") }

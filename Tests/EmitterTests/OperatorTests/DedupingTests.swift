@@ -2,9 +2,9 @@ import Disposable
 import Emitter
 import XCTest
 
-// MARK: - RemoveDuplicatesTests
+// MARK: - DedupingTests
 
-final class RemoveDuplicatesTests: XCTestCase {
+final class DedupingTests: XCTestCase {
 
   class CharObj {
 
@@ -27,12 +27,12 @@ final class RemoveDuplicatesTests: XCTestCase {
     stage.reset()
   }
 
-  func testStream_removeDuplicates_equatable() {
+  func testStream_dedupe_equatable() {
     let record: Unchecked<[String]> = .init([])
     let source = PublishSubject<String, Never>()
 
     source
-      .removeDuplicates()
+      .dedupe()
       .subscribe { output in
         record.value.append(output)
       }
@@ -49,12 +49,12 @@ final class RemoveDuplicatesTests: XCTestCase {
     XCTAssertEqual(["a", "d", "e"], record.value)
   }
 
-  func testStream_removeDuplicates_byFilter() {
+  func testStream_dedupe_byFilter() {
     let record: Unchecked<[String]> = .init([])
     let source = PublishSubject<String, Never>()
 
     source
-      .removeDuplicates(by: { $0.lowercased() == $1.lowercased() })
+      .dedupe(by: { $0.lowercased() == $1.lowercased() })
       .subscribe { output in
         record.value.append(output)
       }
@@ -69,12 +69,12 @@ final class RemoveDuplicatesTests: XCTestCase {
     XCTAssertEqual(["a", "D", "ƀ", "b", "🫵", "B", "😀"], record.value)
   }
 
-  func testStream_removeDuplicates_nonEquatable() {
+  func testStream_dedupe_nonEquatable() {
     let record: Unchecked<[String]> = .init([])
     let source = PublishSubject<CharObj, Never>()
 
     source
-      .removeDuplicates(by: { $0.char == $1.char })
+      .dedupe(by: { $0.char == $1.char })
       .map(\.char)
       .subscribe { output in
         record.value.append(output)
@@ -103,7 +103,7 @@ final class RemoveDuplicatesTests: XCTestCase {
         weakSourceA = sourceA
 
         sourceA
-          .removeDuplicates()
+          .dedupe()
           .subscribe { value in
             record.value.append(value)
           }
