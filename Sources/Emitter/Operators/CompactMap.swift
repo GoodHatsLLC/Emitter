@@ -13,6 +13,13 @@ extension Emitter {
     map(transformer)
       .compact()
   }
+
+  public func compactMap<T>(
+    transformer: @escaping @Sendable (Output) throws -> T?
+  ) -> some Emitter<T, Error> {
+    map(transformer)
+      .compact()
+  }
 }
 
 // MARK: - Emitters.Compact
