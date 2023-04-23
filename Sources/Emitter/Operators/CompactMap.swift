@@ -8,14 +8,14 @@ extension Emitter {
   }
 
   public func compactMap<T>(
-    transformer: @escaping @Sendable (Output) -> T?
+    _ transformer: @escaping @Sendable (Output) -> T?
   ) -> some Emitter<T, Failure> {
     map(transformer)
       .compact()
   }
 
   public func compactMap<T>(
-    transformer: @escaping @Sendable (Output) throws -> T?
+    _ transformer: @escaping @Sendable (Output) throws -> T?
   ) -> some Emitter<T, Error> {
     map(transformer)
       .compact()
