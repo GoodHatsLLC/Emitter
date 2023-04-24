@@ -10,13 +10,13 @@ extension Emitters {
 
 public struct NeverEmitter: Emitter {
   public func subscribe<S>(_ subscriber: S) -> AutoDisposable where S: Subscriber,
-    Never == S.Failure, () == S.Input
+    Failure == S.Failure, () == S.Input
   {
     subscriber.receive(emission: .finished)
     return AutoDisposable { }
   }
 
   public typealias Output = ()
-  public typealias Failure = Never
+  public typealias Failure = Error
 
 }

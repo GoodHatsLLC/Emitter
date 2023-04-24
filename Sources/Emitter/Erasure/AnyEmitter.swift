@@ -30,4 +30,5 @@ extension Emitter {
   }
 
   public func any() -> any Emitter<Output, Failure> { self }
+  public func some() -> some Emitter<Output, Failure> { self }
 }

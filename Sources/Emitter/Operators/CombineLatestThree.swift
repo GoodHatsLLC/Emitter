@@ -43,13 +43,8 @@ extension Emitter {
   {
     Emitters
       .CombineLatestThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
-      .mapFailure { error in
-        switch error {
-        case .a,
-             .b,
-             .c:
-          fatalError("Failure == Never")
-        }
+      .mapFailure { _ in
+        fatalError("Failure == Never")
       }
   }
 }
