@@ -86,12 +86,8 @@ extension PublishSubject {
 
     if didSubscribe {
       return AutoDisposable {
-        if
-          let subscription = self.state.withLock(action: { state in
-            state.subs.remove(subscription)
-          })
-        {
-          subscription.receive(emission: .finished)
+        _ = self.state.withLock { state in
+          state.subs.remove(subscription)
         }
       }
     } else {

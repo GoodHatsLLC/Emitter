@@ -1,7 +1,7 @@
 import Disposable
 
 extension Emitter {
-  func redirect(
+  public func redirect(
     _ redirection: @escaping @Sendable (
       _ event: Emission<Output, Failure>,
       _ downstream: @escaping @Sendable (Emission<Output, Failure>) -> Void
