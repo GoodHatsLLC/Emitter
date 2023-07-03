@@ -22,8 +22,8 @@ extension Emitter {
       .CombineLatestTwo(upstreamA: self, upstreamB: otherB)
       .mapFailure { error in
         switch error {
-        case .a(let err): return err as Error
-        case .b(let err): return err as Error
+        case .a(let err): return err as any Error
+        case .b(let err): return err as any Error
         }
       }
   }

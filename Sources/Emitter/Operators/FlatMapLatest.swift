@@ -82,20 +82,20 @@ extension Emitters {
 
       // MARK: Private
 
-      private struct InnerSub<Downstream: Subscriber>: Subscriber
+      private struct InnerSub<InnerDownstream: Subscriber>: Subscriber
         where Downstream.Failure == Upstream.Failure
       {
 
-        typealias Output = Downstream.Input
-        typealias Failure = Downstream.Failure
+        typealias Output = InnerDownstream.Input
+        typealias Failure = InnerDownstream.Failure
 
         fileprivate init(
-          downstream: Downstream
+          downstream: InnerDownstream
         ) {
           self.downstream = downstream
         }
 
-        private let downstream: Downstream
+        private let downstream: InnerDownstream
 
         fileprivate func receive(emission: Emission<Output, Failure>) {
           switch emission {

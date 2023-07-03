@@ -159,7 +159,7 @@ extension Emitters {
       private let onAllUnsubscribe: () -> Void
 
       private let maxCount: Int
-      /// FIXME: these separated locked state bits probably race.
+      // FIXME: these separated locked state bits probably race.
       private let cache: Locked<(
         buffer: ContiguousArray<Emission<Upstream.Output, Failure>>,
         next: Int,

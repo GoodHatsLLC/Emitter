@@ -27,9 +27,9 @@ extension Emitter {
       .CombineLatestThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
       .mapFailure { error in
         switch error {
-        case .a(let err): return err as Error
-        case .b(let err): return err as Error
-        case .c(let err): return err as Error
+        case .a(let err): return err as any Error
+        case .b(let err): return err as any Error
+        case .c(let err): return err as any Error
         }
       }
   }

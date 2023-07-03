@@ -19,7 +19,7 @@ extension Emitter {
     Emitters
       .UnionThree(upstreamA: self, upstreamB: otherB, upstreamC: otherC)
       .mapFailure { error in
-        error as Error
+        error as any Error
       }
   }
 

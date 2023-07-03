@@ -13,7 +13,7 @@ extension Emitter {
     Emitters
       .UnionTwo(upstreamA: self, upstreamB: otherB)
       .mapFailure { error in
-        error as Error
+        error as any Error
       }
   }
 

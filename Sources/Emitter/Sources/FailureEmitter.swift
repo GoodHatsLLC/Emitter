@@ -1,7 +1,7 @@
 import Disposable
 
 extension Emitters {
-  public static var failure: FailureEmitter<Error> {
+  public static var failure: FailureEmitter<any Error> {
     .init(failure: FailEmitterFailure())
   }
 

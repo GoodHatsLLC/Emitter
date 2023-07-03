@@ -24,11 +24,11 @@ public struct AsyncToEmitterBridge<Seq: AsyncSequence>: Emitter, @unchecked Send
   public typealias Output = Seq.Element
 
   public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-    where Seq.Element == S.Input, S.Failure == Error
+    where Seq.Element == S.Input, S.Failure == any Error
   {
     let stage = DisposableStage()
     Emitters
-      .create(Emission<Output, Error>.self) { emit in
+      .create(Emission<Output, any Error>.self) { emit in
         ErasedDisposable(Task {
           do {
             for try await value in seq {

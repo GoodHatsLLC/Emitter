@@ -34,7 +34,7 @@ extension Emitters {
     public let upstream: Upstream
 
     public func subscribe<S: Subscriber>(_ subscriber: S) -> AutoDisposable
-      where S.Input == Output, S.Failure == Error
+      where S.Input == Output, S.Failure == any Error
     {
       upstream.subscribe(
         Sub<S>(
@@ -47,7 +47,7 @@ extension Emitters {
     // MARK: Private
 
     private struct Sub<Downstream: Subscriber>: Subscriber
-      where Downstream.Input == TransformedOutput, Downstream.Failure == Error
+      where Downstream.Input == TransformedOutput, Downstream.Failure == any Error
     {
 
       // MARK: Lifecycle

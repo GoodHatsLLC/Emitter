@@ -1,7 +1,7 @@
 import Disposable
 
 extension Emitter {
-  public typealias AsyncEmitting<Output, Failure> = AsyncThrowingStream<Output, Error>
+  public typealias AsyncEmitting<Output, Failure> = AsyncThrowingStream<Output, any Error>
 
   public var values: AsyncEmitting<Output, Failure> {
     EmitterToAsyncBridge<Output, Failure>(self).values
@@ -35,5 +35,5 @@ public struct EmitterToAsyncBridge<Output, Failure> {
     }
   }
 
-  public let values: AsyncThrowingStream<Output, Error>
+  public let values: AsyncThrowingStream<Output, any Error>
 }

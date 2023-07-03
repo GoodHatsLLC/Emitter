@@ -22,7 +22,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/GoodHatsLLC/Disposable.git",
-      from: .init(0, 8, 0)
+      .upToNextMinor(from: "1.0.0")
     ),
   ],
   targets: [
@@ -30,7 +30,8 @@ let package = Package(
       name: "Emitter",
       dependencies: [
         "Disposable",
-      ]
+      ],
+      swiftSettings: Env.swiftSettings
     ),
     .testTarget(
       name: "EmitterTests",
@@ -38,3 +39,19 @@ let package = Package(
     ),
   ]
 )
+
+// MARK: - Env
+
+private enum Env {
+  static let swiftSettings: [SwiftSetting] = {
+    var settings: [SwiftSetting] = []
+    settings.append(contentsOf: [
+      .enableUpcomingFeature("ConciseMagicFile"),
+      .enableUpcomingFeature("ExistentialAny"),
+      .enableUpcomingFeature("StrictConcurrency"),
+      .enableUpcomingFeature("ImplicitOpenExistentials"),
+      .enableUpcomingFeature("BareSlashRegexLiterals"),
+    ])
+    return settings
+  }()
+}

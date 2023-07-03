@@ -85,7 +85,7 @@ public struct CombineToEmitterBridge<Upstream: Combine.Publisher>: Emitter, @unc
       }
     }
 
-    func receive(subscription: Combine.Subscription) {
+    func receive(subscription: any Combine.Subscription) {
       subscription.request(.unlimited)
       self.subscription = ErasedDisposable(subscription).auto()
     }

@@ -6,7 +6,7 @@ extension Emitter {
   public nonisolated func subscribeMain(
     value: @escaping @MainActor (_ value: Output) -> Void,
     finished: @escaping @MainActor () -> Void = { },
-    failed: @escaping @MainActor (_ error: Error) -> Void = { _ in }
+    failed: @escaping @MainActor (_ error: any Error) -> Void = { _ in }
   )
     -> AutoDisposable
   {
@@ -27,7 +27,7 @@ private struct SubscribeMain<Output, Failure: Error>: Subscriber {
   fileprivate init(
     value: @escaping @MainActor (Output) -> Void,
     finished: (@MainActor () -> Void)?,
-    failed: (@MainActor (Error) -> Void)?
+    failed: (@MainActor (any Error) -> Void)?
   ) {
     self.valueFunc = value
     self.finishedFunc = finished
@@ -49,6 +49,6 @@ private struct SubscribeMain<Output, Failure: Error>: Subscriber {
 
   private let valueFunc: @MainActor (Output) -> Void
   private let finishedFunc: (@MainActor () -> Void)?
-  private let failedFunc: (@MainActor (Error) -> Void)?
+  private let failedFunc: (@MainActor (any Error) -> Void)?
 
 }
